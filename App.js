@@ -10,6 +10,9 @@ import Colors from "./constants/Colors";
 import * as Font from 'expo-font';
 import ErrorScreen from "./screens/ErrorScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import configureStore from './configStore';
+import setupInterceptors from "./services/api/interceptors";
+import {Provider} from "react-redux";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,6 +21,8 @@ Notifications.setNotificationHandler({
     shouldSetBadge: true,
   }),
 });
+
+setupInterceptors(configureStore)
 
 export default function App() {
 
@@ -111,14 +116,16 @@ export default function App() {
 
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name={'Home'} component={HomeScreen}
-                      options={{headerShown: false, tabBarShowLabel: false}}/>
-        <Stack.Screen name={'Error'} component={ErrorScreen}
-                      options={{headerShown: false, tabBarShowLabel: false}}/>
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={configureStore}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name={'Home'} component={HomeScreen}
+                        options={{headerShown: false, tabBarShowLabel: false}}/>
+          <Stack.Screen name={'Error'} component={ErrorScreen}
+                        options={{headerShown: false, tabBarShowLabel: false}}/>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
 
