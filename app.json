@@ -1,6 +1,20 @@
 {
   "expo": {
-    "name": "EventLoopV3",
+    "scheme": "eventloop",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": ".assets/icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./local/assets/notification-sound.wav",
+            "./local/assets/notification-sound-other.wav"
+          ]
+        }
+      ]
+    ],
+    "name": "EventLoop",
     "slug": "EventLoopV3",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,7 +32,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
