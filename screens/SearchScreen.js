@@ -4,7 +4,7 @@ import {Text, View} from "react-native";
 const SearchScreen = () => {
   return (
     <View>
-      <Text>SearchScreen</Text>
+      <Text>SearchScreen DEV</Text>
     </View>
   );
 };
