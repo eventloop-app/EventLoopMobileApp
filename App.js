@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import * as Notifications from 'expo-notifications'
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -12,7 +12,13 @@ import ErrorScreen from "./screens/ErrorScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import configureStore from './configStore';
 import setupInterceptors from "./services/api/interceptors";
-import {Provider} from "react-redux";
+import {Provider, useDispatch} from "react-redux";
+import SetupProfile from "./screens/SetupProfile";
+import Fonts from "./constants/Fonts";
+import fontSize from "./constants/FontSize";
+import EventDetailScreen from "./screens/EventDetailScreen";
+import EventReportListScreen from "./screens/EventReportListScreen";
+
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,8 +30,9 @@ Notifications.setNotificationHandler({
 
 setupInterceptors(configureStore)
 
-export default function App() {
-
+export default function App({ route, navigation }) {
+  const [isLoad, setIsLoad] = useState(true)
+  const [token, setToken] = useState(null)
   const notificationListener = useRef();
   const responseListener = useRef();
   const Stack = createNativeStackNavigator();
@@ -40,8 +47,9 @@ export default function App() {
   },[])
 
   useEffect(() => {
-    registerForPushNotification().then(token => {
-      console.log(token)
+    registerForPushNotification().then(async token => {
+     await setToken(token)
+      await setIsLoad(false)
     }).catch(e => {
       console.warn(e)
     })
@@ -100,6 +108,7 @@ export default function App() {
         <Tab.Screen
           name={'Feed'}
           component={FeedScreen}
+          initialParams={{ token: token }}
           options={{headerShown: false, tabBarShowLabel: false}}
         />
         <Tab.Screen name={'Search'} component={SearchScreen} options={{headerShown: false, tabBarShowLabel: false}}/>
@@ -114,13 +123,58 @@ export default function App() {
     )
   }
 
-
   return (
+    !isLoad &&
     <Provider store={configureStore}>
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen name={'Home'} component={HomeScreen}
                         options={{headerShown: false, tabBarShowLabel: false}}/>
+          <Stack.Screen name={'SetupProfile'} component={SetupProfile}
+                        options={{
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: 'ตั้งค่าโปรไฟล์',
+                        }}
+          />
+          <Stack.Screen name={'EventDetail'} component={EventDetailScreen}
+                        options={{
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: 'เดียวมาตั้ง',
+                        }}
+          />
+          <Stack.Screen name={'EventReportList'} component={EventReportListScreen}
+                        options={{
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: 'เดียวมาตั้ง',
+                        }}
+          />
           <Stack.Screen name={'Error'} component={ErrorScreen}
                         options={{headerShown: false, tabBarShowLabel: false}}/>
         </Stack.Navigator>

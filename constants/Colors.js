@@ -11,6 +11,7 @@ export default {
     light: '#EEEEEE',
     dark: '#333',
     gray: '#424949',
+    gray2: '#A0A0A0',
     lightpink: '#FAC6F0',
     lightgray: '#E4E4E4',
     red: '#DD6B55',

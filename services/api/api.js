@@ -17,8 +17,41 @@ import apis from "./config"
 // });
 
 class api {
+
   getAllEvents(){
      return apis({method: "get", url: `events?pageSize=100`})
+  }
+
+  checkUserEmail(email){
+    return apis({
+      method: "post",
+      url: `members/hasEmail`,
+      data: {email: email}
+    })
+  }
+
+  checkUsername(username){
+    return apis({
+      method: "post",
+      url: `members/hasUsername`,
+      data: {username: username}
+    })
+  }
+
+  transferMemberData(data){
+    return apis({
+      method: "post",
+      url: `members/transferMemberData`,
+      data: data,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  }
+
+  getUserDataById(id){
+    return apis({
+      method: "get",
+      url: `members/${id}`
+    })
   }
 }
 export default  new api();

@@ -4,15 +4,17 @@ import decode from "../jwt/decode";
 class storages  {
   save = async (key, value) => {
     try {
+      console.log("SAVE: " + key + " " + value)
       await AsyncStorage.setItem(key, value)
     } catch (error) {
       console.log("SaveStorageError:" + error);
     }
   }
 
-  remove = async (name) => {
+  remove = async (key) => {
     try {
-      await AsyncStorage.removeItem(name)
+      await AsyncStorage.removeItem(key)
+      console.log('removed')
     } catch (error) {
       console.log("RemoveStorageError:" + error);
     }
@@ -22,7 +24,18 @@ class storages  {
     try {
       const data = await AsyncStorage.getItem(key);
       if (data !== null) {
-        return data;
+        return new Promise(resolve => resolve(data))
+      }
+    } catch (error) {
+      console.log("GetStorageError:" + error);
+    }
+  }
+
+  getData2 = async (key) => {
+    try {
+      const data = await AsyncStorage.getItem(key);
+      if (data !== null) {
+        return data
       }
     } catch (error) {
       console.log("GetStorageError:" + error);
@@ -32,8 +45,8 @@ class storages  {
   getUserData = async () => {
     try {
       let data = await AsyncStorage.getItem('userToken');
-      data = decode.jwt(JSON.parse(data).idToken)
       if (data !== null) {
+        data = decode.jwt(JSON.parse(data).idToken)
         return new Promise(resolve => resolve(data))
       }
     } catch (error) {
