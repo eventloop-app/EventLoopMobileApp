@@ -18,6 +18,8 @@ import Fonts from "./constants/Fonts";
 import fontSize from "./constants/FontSize";
 import EventDetailScreen from "./screens/EventDetailScreen";
 import EventReportListScreen from "./screens/EventReportListScreen";
+import EventReportScreen from "./screens/EventReportScreen";
+import CreateEventScreen from "./screens/CreateEventScreen";
 
 
 Notifications.setNotificationHandler({
@@ -112,7 +114,7 @@ export default function App({ route, navigation }) {
           options={{headerShown: false, tabBarShowLabel: false}}
         />
         <Tab.Screen name={'Search'} component={SearchScreen} options={{headerShown: false, tabBarShowLabel: false}}/>
-        <Tab.Screen name={'CreateEvent'} component={FeedScreen}
+        <Tab.Screen name={'CreateEvent'} component={CreateEventScreen}
                     options={{headerShown: false, tabBarShowLabel: false}}/>
         <Tab.Screen name={'Like'} component={FeedScreen} options={{headerShown: false, tabBarShowLabel: false}}/>
         <Tab.Screen name={'Profile'}
@@ -175,6 +177,23 @@ export default function App({ route, navigation }) {
                           title: 'เดียวมาตั้ง',
                         }}
           />
+          <Stack.Screen name={'EventReport'} component={EventReportScreen}
+                        options={{
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: 'เดียวมาตั้ง',
+                        }}
+          />
+
+
           <Stack.Screen name={'Error'} component={ErrorScreen}
                         options={{headerShown: false, tabBarShowLabel: false}}/>
         </Stack.Navigator>

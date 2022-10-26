@@ -53,5 +53,31 @@ class api {
       url: `members/${id}`
     })
   }
+
+  getAllEventReport(memberId){
+    return apis({
+      method: "post",
+      url: `reports/getReports`,
+      data: {memberId: memberId},
+    })
+  }
+
+  getReportDetailById(memberId,eventId){
+    console.log("getReportDetailById: "+ memberId)
+    return apis({
+      method: "post",
+      url: `reports/getReports`,
+      data: {memberId: memberId, eventId: eventId},
+    })
+  }
+
+  stampReport(memberId,reportId,isReview){
+    console.log(memberId,reportId,isReview)
+    return apis({
+      method: "put",
+      url: `reports`,
+      data: { reportId: reportId, memberId: memberId, isReview: isReview},
+    })
+  }
 }
 export default  new api();
