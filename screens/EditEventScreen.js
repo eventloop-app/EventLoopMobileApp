@@ -18,6 +18,7 @@ const weekdays = 'อาทิตย์_จันทร์_อังคาร_�
 
 const CreateEventScreen = (props) => {
   const input_num = useRef()
+  const [isLoad, setIsLoad] = useState(true)
   const [userData, setUserData] = useState(null)
   const [eventData, setEventData] = useState(
     {
@@ -36,9 +37,9 @@ const CreateEventScreen = (props) => {
   )
   const [dateStatus, setDateStatus] = useState(null)
   const [coverImage, setCoverImage] = useState(null)
-  const [showLoad, setShowLoad] = useState(false)
 
   useEffect(() => {
+
     const unsubscribe = props.navigation.addListener('focus', () => {
       if (props.route.params?.map !== undefined && props.route.params?.map !== null) {
         setEventData({...eventData, location: null})
@@ -50,6 +51,31 @@ const CreateEventScreen = (props) => {
             longitude: props.route.params.map.lng
           })
         }, 200)
+      } else if (props.route.params?.eveId !== undefined && props.route.params?.eveId !== null) {
+        console.log('GetEvent')
+        api.getEventById(props.route.params?.eveId).then(res => {
+          console.log(res.data)
+          setEventData({
+            eventId: res.data.id,
+            eventName: res.data.eventName,
+            description: res.data.description,
+            type: res.data.type,
+            startDate: res.data.startDate,
+            endDate: res.data.endDate,
+            memberId: res.data.organizerId,
+            location: res.data.location.name,
+            latitude: res.data.location.latitude ?? "-1",
+            longitude: res.data.location.longitude ?? "-1",
+            numberOfPeople: res.data.numberOfPeople,
+            tags: res.data.tags,
+            onReport: true
+          })
+          setCoverImage(res.data.coverImageUrl)
+          setTimeout(() => {
+            setIsLoad(false)
+          }, 500)
+
+        })
       }
     });
     return unsubscribe;
@@ -62,25 +88,26 @@ const CreateEventScreen = (props) => {
   //   return unsubscribe;
   // }, [props.navigation]);
 
-  useEffect(() => {
-    checkHasUser()
-  }, [])
-
-  const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-          setEventData({...eventData, memberId: user.data.id})
-        }
-      }).catch(error => {
-        setUserData(null)
-        setEventData({...eventData, memberId: null})
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
-  }
+  // useEffect(() => {
+  //   checkHasUser()
+  //
+  // }, [])
+  //
+  // const checkHasUser = () => {
+  //   storages.getUserData().then(res => {
+  //     api.getUserDataById(res?.memberId).then(user => {
+  //       if (user.status === 200) {
+  //         setUserData(user.data)
+  //         setEventData({...eventData, memberId: user.data.id})
+  //       }
+  //     }).catch(error => {
+  //       setUserData(null)
+  //       setEventData({...eventData, memberId: null})
+  //       console.log("GET USER")
+  //       console.log(error)
+  //     })
+  //   })
+  // }
 
   const onChangeStartDate = (date) => {
     setEventData({...eventData, startDate: date.getTime()})
@@ -134,7 +161,7 @@ const CreateEventScreen = (props) => {
         </Text>
         <View style={{marginTop: 30}}>
           <RNDateTimePicker
-            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 0)).setHours(0, 0, 0, 0))}
+            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 5)).setHours(0, 0, 0, 0))}
             mode={dateStatus ? "time" : "datetime"}
             value={dateStatus ? new Date(eventData.endDate) : new Date(eventData.startDate)}
             style={{height: 100, fontFamily: Fonts.primary}}
@@ -161,7 +188,7 @@ const CreateEventScreen = (props) => {
     </View>
   )
 
-  const onCheckForm = () =>{
+  const onCheckForm = () => {
     return (eventData.eventName?.length > 3 && eventData.tags.length > 0 && eventData.numberOfPeople >= 2 && eventData.location?.length > 3 && eventData.description?.length > 20)
   }
 
@@ -337,7 +364,6 @@ const CreateEventScreen = (props) => {
                   </TouchableOpacity>
                 </View>
               </View>
-
               <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', margin: 10}}>
                 <TouchableOpacity onPress={() => setDateStatus(false)} style={{
                   width: 50,
@@ -383,7 +409,7 @@ const CreateEventScreen = (props) => {
                     keyboardType={'number-pad'}
                     maxLength={2}
                     ref={input_num}
-                    defaultValue={eventData.numberOfPeople}
+                    defaultValue={eventData.numberOfPeople.toString()}
                     placeholder={'0'}
                     style={{
                       fontFamily: Fonts.primary,
@@ -406,7 +432,7 @@ const CreateEventScreen = (props) => {
               <View style={{display: 'flex', width: 300, flexDirection: 'row', alignItems: 'center', margin: 10}}>
                 <TouchableOpacity onPress={() => {
                   if (eventData.type === "ONSITE") {
-                    props.navigation.navigate('GoogleMap')
+                    props.navigation.navigate('GoogleMap', {page: 'EditEvent'})
                   }
                 }} style={{
                   width: 50,
@@ -477,28 +503,46 @@ const CreateEventScreen = (props) => {
                   color: Colors.yellow
                 }}>ต้องระบุรายกิจกรรมอย่างน้อย 20 ตัวอักษร
               </Text>
+              {
+                ((moment().unix() * 1000) < eventData?.startDate) &&
+                <View style={{display: 'flex', flexDirection: 'column', margin: 20}}>
+                  <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <TouchableOpacity onPress={() => onSubmit()}>
+                      <View style={{
+                        backgroundColor: onCheckForm() ? Colors.primary : Colors.gray2,
+                        width: Platform.OS === 'ios'?  350 : 390,
+                        padding: 10,
+                        borderRadius: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}>
+                        <Text style={{
+                          fontFamily: Fonts.bold,
+                          fontSize: fontSize.primary,
+                          color: Colors.white
+                        }}>อัพเดทกิจกรมม</Text>
+                      </View>
+                    </TouchableOpacity>
 
-              <View style={{display: 'flex', flexDirection: 'column', margin: 20}}>
-                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                  <TouchableOpacity disabled={!onCheckForm()} onPress={() => onSubmit()}>
-                    <View style={{
-                      backgroundColor: onCheckForm() ? Colors.primary : Colors.gray2,
-                      width:  Platform.OS === 'ios'?  350 : 390,
-                      padding: 10,
-                      borderRadius: 10,
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{
-                        fontFamily: Fonts.bold,
-                        fontSize: fontSize.primary,
-                        color: Colors.white
-                      }}>สร้างกิจกรรม</Text>
-                    </View>
-
-                  </TouchableOpacity>
+                    <TouchableOpacity style={{marginTop: 15}} onPress={() => onSubmit()}>
+                      <View style={{
+                        backgroundColor: Colors.red,
+                        width:  Platform.OS === 'ios'?  350 : 390,
+                        padding: 10,
+                        borderRadius: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}>
+                        <Text style={{
+                          fontFamily: Fonts.bold,
+                          fontSize: fontSize.primary,
+                          color: Colors.white
+                        }}>ยกเลิกกิจกรรม</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
+              }
             </ScrollView>
           </KeyboardAwareScrollView>
         </View>
@@ -506,66 +550,31 @@ const CreateEventScreen = (props) => {
     </View>
   )
 
-  const renderLoad = () =>(
-    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.25)', zIndex: 50}}>
-      <View style={{width: 150, height:100, backgroundColor: Colors.white, borderRadius: 15, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>กำลังบันทึกข้อมูล</Text>
-      </View>
-    </View>
-  )
-
   const onSubmit = () => {
-    setShowLoad(true)
     const filename = coverImage?.toString().split('/').pop()
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : `image`;
 
     const data = new FormData();
     data.append('eventInfo', JSON.stringify(eventData));
-    data.append('coverImage', coverImage ? {uri: coverImage, name: filename, type: type} : null);
+    if(!coverImage.includes('.webp')){
+      data.append('coverImage', coverImage ? {uri: coverImage, name: filename, type: type} : null);
+    }
     console.log(data)
-    api.createEvent(data).then(async res => {
+    api.editEvent(data).then(res => {
       if(res.status === 200){
-        console.log('Pass')
-        await setEventData({
-          eventName: null,
-          description: null,
-          type: "ONLINE",
-          startDate: new Date().getTime(),
-          endDate: new Date().getTime(),
-          memberId: null,
-          location: null,
-          latitude: "-1",
-          longitude: "-1",
-          numberOfPeople: 0,
-          tags: [],
-        })
-        await setCoverImage(null)
-        await setDateStatus(null)
-        await setShowLoad(false)
-        props.navigation.navigate('Feed')
+        props.navigation.pop()
       }
     })
   }
 
-  return (
-    <View style={{flex: 1, backgroundColor: userData ? Colors.gray2 : Colors.white}}>
-      {
-        showLoad && renderLoad()
-      }
+  return (!isLoad &&
+    <View style={{flex: 1, backgroundColor: Colors.gray2}}>
       {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
       }
       {
-        userData ? renderForm() :
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <Text style={{
-              marginLeft: 10,
-              fontFamily: Fonts.bold,
-              fontSize: FontSize.big,
-              color: Colors.black
-            }} >คุณยังไม่ได้เข้าสู่ระบบ</Text>
-          </View>
+        renderForm()
       }
     </View>
   );

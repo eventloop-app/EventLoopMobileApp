@@ -37,7 +37,7 @@ const EventCards = ({event, onPress}) => {
                 height: '100%',
               }}
               source={{
-                uri: (event.coverImageUrl)
+                uri: (event.coverImageUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
               }}
             />
           </View>

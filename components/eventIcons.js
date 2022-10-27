@@ -7,16 +7,16 @@ const EventIcons = (props) => {
   const checkIconSource = () =>{
     switch (props.source) {
       case "Feather":
-        return <Feather style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color="black"/>
+        return <Feather style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color={props.color ?? "black"}/>
         break
       case "Ionicons":
-        return <Ionicons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color="black"/>
+        return <Ionicons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color={props.color ?? "black"}/>
         break
       case "MaterialIcons":
-        return <MaterialIcons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color="black"/>
+        return <MaterialIcons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color={props.color ?? "black"}/>
         break
       case "MaterialCommunityIcons":
-        return <MaterialCommunityIcons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color="black"/>
+        return <MaterialCommunityIcons style={{alignSelf: "center"}} name={props.name} size={props.size ?? 36} color={props.color ?? "black"}/>
         break
     }
   }

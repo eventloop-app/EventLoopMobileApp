@@ -55,6 +55,7 @@ class api {
   }
 
   getAllEventReport(memberId){
+    console.log(memberId)
     return apis({
       method: "post",
       url: `reports/getReports`,
@@ -79,5 +80,167 @@ class api {
       data: { reportId: reportId, memberId: memberId, isReview: isReview},
     })
   }
+
+  createEvent(data){
+    return apis({
+      method: "post",
+      url: `events/createEvent`,
+      data: data,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  }
+
+  getEventByOrg(memId){
+    return apis({
+      method: "get",
+      url: `members/${memId}/createEvent`
+    })
+  }
+
+  suspendEvent(data){
+    console.log(data)
+    return apis({
+      method: "post",
+      url: `admin/stampEventStatus`,
+      data: data,
+    })
+  }
+
+  getEventById(eveId){
+    return apis({
+      method: "get",
+      url: `events/${eveId}`
+    })
+  }
+
+  editEvent(data){
+    return apis({
+      method: "put",
+      url: `events/editEvent`,
+      data: data,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  }
+
+  stampBookMark(data){
+    return apis({
+      method: "post",
+      url: `members/bookmark`,
+      data: data,
+    })
+  }
+
+  getBookMark(memId){
+    return apis({
+      method: "post",
+      url: `members/getBookmark`,
+      data: memId
+    })
+  }
+
+  reportEvent(data){
+    return apis({
+      method: "post",
+      url: `reports/submit`,
+      data: data,
+    })
+  }
+
+  registerEvent(data){
+    return apis({
+      method: "post",
+      url: `events/registerEvent`,
+      data: data
+    })
+  }
+
+  isRegisterEvent(data){
+    return apis({
+      method: "post",
+      url: `events/isRegister`,
+      data: data
+    })
+  }
+
+  unRegisterEvent(data){
+    return apis({
+      method: "post",
+      url: `events/unregisterEvent`,
+      data: data
+    })
+  }
+
+  generateCode(data){
+    return apis({
+      method: "post",
+      url: `events/generateCode`,
+      data: data
+    })
+  }
+
+  checkIn(data){
+    return apis({
+      method: "post",
+      url: `events/checkIn`,
+      data: data
+    })
+  }
+
+  getCheckInMem(data){
+    return apis({
+      method: "get",
+      url: `events/getCheckIn`,
+      data: data
+    })
+  }
+
+  getRegMem(data){
+    return apis({
+      method: "post",
+      url: `events/getRegisterMember`,
+      data: data
+    })
+  }
+
+  isCheckIn(data){
+    return apis({
+      method: "post",
+      url: `events/isCheckIn`,
+      data: data
+    })
+  }
+
+  getOrgEvent(memId){
+    return apis({
+      method: "get",
+      url: `members/${memId}/registerEvent?pageSize=100`,
+    })
+  }
+
+  reviewEvent(data){
+    return apis({
+      method: "post",
+      url: `/events/submitFeedback`,
+      data: data
+    })
+  }
+
+  isReview(data){
+    return apis({
+      method: "post",
+      url: `/events/isReview`,
+      data: data
+    })
+  }
+
+
+
+
+
+
+
+
+
+
 }
 export default  new api();

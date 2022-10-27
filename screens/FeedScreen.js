@@ -23,6 +23,7 @@ const FeedScreen = (props) => {
       // Call any action
       console.log('Hello')
       checkHasUser()
+      getAllEvent()
     });
     // Return the function to unsubscribe from the event so it gets removed on unmount
     return unsubscribe;
@@ -33,7 +34,7 @@ const FeedScreen = (props) => {
       api.getUserDataById(res?.memberId).then(user => {
         if (user.status === 200) {
           setUserData(user.data)
-          console.log(user.data.role)
+          console.log(user.data.id)
         }
       }).catch(error => {
         setUserData(null)
@@ -52,6 +53,10 @@ const FeedScreen = (props) => {
   }, [])
 
   useEffect(() => {
+    getAllEvent()
+  }, [])
+
+  const getAllEvent = () =>{
     api.getAllEvents().then(async res => {
       if (res.status === 200 && res.data.content.length > 0) {
         setEvents(res.data.content)
@@ -63,10 +68,10 @@ const FeedScreen = (props) => {
       }
     }).catch(error => {
       console.error(error)
-      props.navigation.navigate('Error')
+      // props.navigation.navigate('Error')
       return;
     })
-  }, [])
+  }
 
   return (
     !isLoad &&

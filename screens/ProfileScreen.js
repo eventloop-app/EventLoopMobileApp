@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Image, Platform, Text, TouchableOpacity, View} from "react-native";
+import {Button, Image, Platform, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import * as WebBrowser from 'expo-web-browser';
 import {exchangeCodeAsync, makeRedirectUri, useAuthRequest, useAutoDiscovery} from 'expo-auth-session';
 import {useDispatch, useSelector} from "react-redux";
@@ -36,10 +36,11 @@ const ProfileScreen = (props) => {
     discovery
   );
 
-  useEffect(()=>{
-    storages.getUserData().then(res =>{
+  useEffect(() => {
+    storages.getUserData().then(res => {
       api.getUserDataById(res?.memberId).then(user => {
-        if(user.status === 200){
+        if (user.status === 200) {
+          console.log(user.data.role)
           setUserData(user.data)
         }
       }).catch(error => {
@@ -47,7 +48,7 @@ const ProfileScreen = (props) => {
         console.log(error)
       })
     })
-  },[])
+  }, [])
 
   useEffect(() => {
     if (userInfo !== null && userInfo !== undefined) {
@@ -65,11 +66,11 @@ const ProfileScreen = (props) => {
       api.checkUserEmail(authData.email).then(res => {
         if (!res.data.hasEmail) {
           props.navigation.navigate('SetupProfile')
-        }else{
-          storages.getUserData().then(res =>{
-           api.getUserDataById(res.memberId).then(user => {
-             setUserData(user.data)
-           })
+        } else {
+          storages.getUserData().then(res => {
+            api.getUserDataById(res.memberId).then(user => {
+              setUserData(user.data)
+            })
           })
         }
       }).catch(error => {
@@ -112,90 +113,159 @@ const ProfileScreen = (props) => {
   }
 
   const renderHasUser = () => (
-    <View style={{flex: 1, marginTop: Platform.OS === 'ios' ? 50 : 35}}>
-      <View style={{position: 'relative', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center'}}>
-        <Image
-          source={userData?.profileUrl ? {uri: userData?.profileUrl} : profileImageMock}
-          style={{
-            width: 200,
-            height: 200,
-            borderRadius: 200 / 2,
-            borderWidth: 4,
-            borderColor: Colors.primary
-          }}
-        />
-      </View>
-      <View style={{alignItems: "center", marginTop: 10}}>
-        <View style={{flexDirection: "row"}}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.large}}>{userData?.username}</Text>
+    <ScrollView
+      contentContainerStyle={{paddingBottom: 220}}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      style={{
+        flex: 1,
+        paddingTop: Platform.OS === 'ios' ? 50 : 35,
+        backgroundColor: Colors.white
+      }}>
+      <View style={{flex: 1, }}>
+        <View style={{position: 'relative', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center'}}>
+          <Image
+            source={userData?.profileUrl ? {uri: userData?.profileUrl} : profileImageMock}
+            style={{
+              width: 200,
+              height: 200,
+              borderRadius: 200 / 2,
+              borderWidth: 4,
+              borderColor: userData?.role === 'MEMBER' ? Colors.primary : Colors.red
+            }}
+          />
         </View>
-        <View style={{flexDirection: "row", marginTop: 4}}>
-          <View style={{alignItems: "center", width: 100}}>
-            <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>กำลังติดตาม</Text>
-            <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
+        <View style={{alignItems: "center", marginTop: 10}}>
+          <View style={{flexDirection: "row"}}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.large}}>{userData?.username}</Text>
           </View>
-          <View style={{marginLeft: 11, marginRight: 0, borderColor: "black", borderWidth: 1}}></View>
-          <View style={{alignItems: "center", width: 100}}>
-            <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>ผู้ติดตาม</Text>
-            <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={{padding: 20}}>
-        <Text style={{
-          fontFamily: Fonts.bold,
-          fontSize: FontSize.medium,
-        }}>เกี่ยวกับฉัน</Text>
-        <Text style={{
-          display: "flex",
-          marginTop: 5,
-          color: userData?.description ? Colors.black : "gray2",
-          fontFamily: Fonts.primary,
-          fontSize: FontSize.small,
-        }}>
-          {userData?.description ? userData?.description.trim() : "คุณยังไม่ได้เพิ่มคำอธิบาย"}
-        </Text>
-        {/*{*/}
-        {/*  (isEdit && <TextInput onChange={(e) => setUserData({...userData, description: e.nativeEvent.text})}*/}
-        {/*                        style={{fontFamily: Fonts.primary, fontSize: FontSize.small, paddingLeft: 1}}*/}
-        {/*                        value={userData.description} placeholder={'คุณยังไม่ได้เพิ่มคำอธิบาย'}/>)*/}
-        {/*}*/}
-      </View>
-
-      <View style={{padding: 20}}>
-        <Text style={{
-          fontFamily: Fonts.bold,
-          fontSize: FontSize.medium,
-        }}>
-          กิจกรรมที่ฉันสนใจ
-        </Text>
-        <View style={{width: "100%", flexDirection: "row", flexWrap: "wrap",}}>
-          {userData?.tags.map((item, index) => {
-            return (
-              <View key={index} View style={{
-                flexDirection: "row",
-                backgroundColor: Colors.primary,
-                borderRadius: 8,
-                padding: 4,
-                paddingHorizontal: 8,
-                marginHorizontal: 2,
-                margin: 5
-              }}>
-                <Text style={{
-                  fontFamily: Fonts.primary,
-                  fontSize: FontSize.small,
-                  color: Colors.white
-                }}>{item}
-                </Text>
-              </View>
-            )
-          })}
-        </View>
-
-        <View style={{justifyContent: 'center', alignItems: 'center'}}>
           {
-            userData?.role === "ADMIN" && <TouchableOpacity activeOpacity={0.8}  onPress={() => props.navigation.navigate('EventReportList')}>
+            userData?.role === "MEMBER" &&
+            <View style={{flexDirection: "row", marginTop: 4}}>
+              <View style={{alignItems: "center", width: 100}}>
+                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>กำลังติดตาม</Text>
+                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
+              </View>
+              <View style={{marginLeft: 11, marginRight: 0, borderColor: "black", borderWidth: 1}}></View>
+              <View style={{alignItems: "center", width: 100}}>
+                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>ผู้ติดตาม</Text>
+                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
+              </View>
+            </View>
+          }
+        </View>
+
+        {
+          userData?.role === "MEMBER" &&
+          <View style={{padding: 20}}>
+            <Text style={{
+              fontFamily: Fonts.bold,
+              fontSize: FontSize.medium,
+            }}>เกี่ยวกับฉัน</Text>
+            <Text style={{
+              display: "flex",
+              marginTop: 5,
+              color: userData?.description ? Colors.black : "gray2",
+              fontFamily: Fonts.primary,
+              fontSize: FontSize.small,
+            }}>
+              {userData?.description ? userData?.description.trim() : "คุณยังไม่ได้เพิ่มคำอธิบาย"}
+            </Text>
+          </View>
+        }
+
+        {
+          userData?.role === "MEMBER" &&
+          <View style={{padding: 20}}>
+            <Text style={{
+              fontFamily: Fonts.bold,
+              fontSize: FontSize.medium,
+            }}>
+              กิจกรรมที่ฉันสนใจ
+            </Text>
+            <View style={{width: "100%", flexDirection: "row", flexWrap: "wrap",}}>
+              {userData?.tags.map((item, index) => {
+                return (
+                  <View key={index} style={{
+                    flexDirection: "row",
+                    backgroundColor: Colors.primary,
+                    borderRadius: 8,
+                    padding: 4,
+                    paddingHorizontal: 8,
+                    marginHorizontal: 2,
+                    margin: 5
+                  }}>
+                    <Text style={{
+                      fontFamily: Fonts.primary,
+                      fontSize: FontSize.small,
+                      color: Colors.white
+                    }}>{item}
+                    </Text>
+                  </View>
+                )
+              })}
+            </View>
+
+            <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 50}}>
+
+              <TouchableOpacity activeOpacity={0.8} onPress={() => props.navigation.navigate('EventListForOrg')}>
+                <View style={{
+                  backgroundColor: Colors.primary,
+                  width:  Platform.OS === 'ios'?  350 : 390,
+                  padding: 10,
+                  borderRadius: 10,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: fontSize.primary,
+                    color: Colors.white
+                  }}>กิจกรรมที่คุณเข้าร่วม</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => props.navigation.navigate('ManageEvent')}>
+                <View style={{
+                  backgroundColor: Colors.primary,
+                  width:  Platform.OS === 'ios'?  350 : 390,
+                  padding: 10,
+                  borderRadius: 10,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: fontSize.primary,
+                    color: Colors.white
+                  }}>จัดการกิจกรรมของคุณ</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => signOut()}>
+                <View style={{
+                  backgroundColor: Colors.red,
+                  width:  Platform.OS === 'ios'?  350 : 390,
+                  padding: 10,
+                  borderRadius: 10,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: fontSize.primary,
+                    color: Colors.white
+                  }}>ออกจากระบบ</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        }
+
+        {
+          userData?.role === "ADMIN" &&
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <TouchableOpacity activeOpacity={0.8} onPress={() => props.navigation.navigate('EventReportList')}>
               <View style={{
                 width: Platform.OS === "ios" ? 340 : 350,
                 height: 45,
@@ -212,81 +282,40 @@ const ProfileScreen = (props) => {
                 }}>รายการอีเวนท์ที่ถูกรายงาน</Text>
               </View>
             </TouchableOpacity>
-          }
 
-          {/*<TouchableOpacity activeOpacity={0.8}>*/}
-          {/*   <View style={{*/}
-          {/*     width: Platform.OS === "ios" ? 340 : 350,*/}
-          {/*     height: 45,*/}
-          {/*     backgroundColor: Colors.primary,*/}
-          {/*     borderRadius: 12,*/}
-          {/*     justifyContent: 'center',*/}
-          {/*     alignItems: 'center',*/}
-          {/*     marginBottom: 20*/}
-          {/*   }}>*/}
-          {/*     <Text style={{*/}
-          {/*       fontFamily: Fonts.bold,*/}
-          {/*       fontSize: fontSize.primary,*/}
-          {/*       color: Colors.white*/}
-          {/*     }}>จัดการกิจกรรมที่สร้าง</Text>*/}
-          {/*   </View>*/}
-          {/* </TouchableOpacity>*/}
-          {/*<TouchableOpacity activeOpacity={0.8} >*/}
-          {/*  <View style={{*/}
-          {/*    width: Platform.OS === "ios" ? 340 : 350,*/}
-          {/*    height: 45,*/}
-          {/*    backgroundColor: Colors.primary,*/}
-          {/*    borderRadius: 12,*/}
-          {/*    justifyContent: 'center',*/}
-          {/*    alignItems: 'center',*/}
-          {/*    marginBottom: 20*/}
-          {/*  }}>*/}
-          {/*    <Text style={{*/}
-          {/*      fontFamily: Fonts.bold,*/}
-          {/*      fontSize: fontSize.primary,*/}
-          {/*      color: Colors.white*/}
-          {/*    }}>{true ? 'อัปเดทโปรไฟล์' : 'แก้ไขโปรไฟล์'}</Text>*/}
-          {/*  </View>*/}
-          {/*</TouchableOpacity>*/}
-          {/*<TouchableOpacity activeOpacity={0.8} onPress={() => setIsEdit(false)}>*/}
-          {/*   <View style={{*/}
-          {/*     width: Platform.OS === "ios" ? 340 : 350,*/}
-          {/*     height: 45,*/}
-          {/*     backgroundColor: Colors.red,*/}
-          {/*     borderRadius: 12,*/}
-          {/*     justifyContent: 'center',*/}
-          {/*     alignItems: 'center',*/}
-          {/*     marginBottom: 20*/}
-          {/*   }}>*/}
-          {/*     <Text style={{*/}
-          {/*       fontFamily: Fonts.bold,*/}
-          {/*       fontSize: fontSize.primary,*/}
-          {/*       color: Colors.white*/}
-          {/*     }}>ยกเลิกแก้ไขโปรไฟล์</Text>*/}
-          {/*   </View>*/}
-          {/* </TouchableOpacity>*/}
-
-          <TouchableOpacity activeOpacity={0.8} onPress={() => signOut()}>
-            <View style={{
-              // backgroundColor: Colors.red,
-              borderRadius: 12,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <Text style={{
-                fontFamily: Fonts.bold,
-                fontSize: fontSize.primary,
-                color: Colors.red
-              }}>ออกจากระบบ</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => signOut()}>
+              <View style={{
+                backgroundColor: Colors.red,
+                width:  Platform.OS === 'ios'?  350 : 390,
+                padding: 10,
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <Text style={{
+                  fontFamily: Fonts.bold,
+                  fontSize: fontSize.primary,
+                  color: Colors.white
+                }}>ออกจากระบบ</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        }
       </View>
-    </View>
+    </ScrollView>
   )
 
-  const renderNotUser = () =>(
-    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
+  const renderNotUser = () => (
+    <View style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+
       <Text style={{
         fontFamily: Fonts.bold,
         fontSize: fontSize.big,
@@ -308,19 +337,39 @@ const ProfileScreen = (props) => {
           promptAsync();
         }}
       >
-      <Text style={{
-        fontFamily: Fonts.bold,
-        fontSize: fontSize.big,
-        color: Colors.primary
-      }}>เข้าสู่ระบบ</Text>
+        <Text style={{
+          fontFamily: Fonts.bold,
+          fontSize: fontSize.big,
+          color: Colors.primary
+        }}>เข้าสู่ระบบ</Text>
       </TouchableOpacity>
+
+      {/*<TouchableOpacity*/}
+      {/*  style={{*/}
+      {/*    marginTop: 30*/}
+      {/*  }}*/}
+      {/*  disabled={!request}*/}
+      {/*  onPress={() => {*/}
+      {/*    props.navigation.navigate('Scanner')*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  <Text style={{*/}
+      {/*    fontFamily: Fonts.bold,*/}
+      {/*    fontSize: fontSize.big,*/}
+      {/*    color: Colors.primary*/}
+      {/*  }}>Scanner</Text>*/}
+      {/*</TouchableOpacity>*/}
+
 
     </View>
   )
 
 
   return (
-    <View style={{flex: 1, backgroundColor: Colors.white}}>
+    <View style={{
+      flex: 1,
+      backgroundColor: userData?.role === 'MEMBER' ? Colors.white : userData?.role === undefined ? Colors.white : Colors.gray2
+    }}>
       {userData ? renderHasUser() : renderNotUser()}
       {/*<TouchableOpacity*/}
       {/*  disabled={!request}*/}

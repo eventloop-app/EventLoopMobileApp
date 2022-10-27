@@ -20,7 +20,19 @@ import EventDetailScreen from "./screens/EventDetailScreen";
 import EventReportListScreen from "./screens/EventReportListScreen";
 import EventReportScreen from "./screens/EventReportScreen";
 import CreateEventScreen from "./screens/CreateEventScreen";
+import moment from "moment";
+import 'moment/locale/th';
+import {TouchableOpacity} from "react-native";
+import MapScreen from "./screens/MapScreen";
+import EventListScreen from "./screens/EventListScreen";
+import ManageEventScreen from "./screens/ManageEventScreen";
+import EditEventScreen from "./screens/EditEventScreen";
+import BookMarkListScreen from "./screens/BookMarkListScreen";
+import ScannerScreen from "./screens/ScannerScreen";
+import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
+import EventListForOrgScreen from "./screens/EventListForOrgScreen";
 
+moment().locale('th')
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -32,7 +44,7 @@ Notifications.setNotificationHandler({
 
 setupInterceptors(configureStore)
 
-export default function App({ route, navigation }) {
+export default function App({route, navigation}) {
   const [isLoad, setIsLoad] = useState(true)
   const [token, setToken] = useState(null)
   const notificationListener = useRef();
@@ -40,17 +52,18 @@ export default function App({ route, navigation }) {
   const Stack = createNativeStackNavigator();
   const Tab = createBottomTabNavigator();
 
-  useEffect(()=>{
+  useEffect(() => {
     Font.loadAsync({
       SukhumvitSet: require('./assets/fonts/SukhumvitSet-Text.ttf'),
       SukhumvitSetMedium: require('./assets/fonts/SukhumvitSet-Medium.ttf'),
       SukhumvitSetBold: require('./assets/fonts/SukhumvitSet-Bold.ttf')
     });
-  },[])
+  }, [])
 
   useEffect(() => {
     registerForPushNotification().then(async token => {
-     await setToken(token)
+      console.log(token)
+      await setToken(token)
       await setIsLoad(false)
     }).catch(e => {
       console.warn(e)
@@ -110,13 +123,14 @@ export default function App({ route, navigation }) {
         <Tab.Screen
           name={'Feed'}
           component={FeedScreen}
-          initialParams={{ token: token }}
+          initialParams={{token: token}}
           options={{headerShown: false, tabBarShowLabel: false}}
         />
         <Tab.Screen name={'Search'} component={SearchScreen} options={{headerShown: false, tabBarShowLabel: false}}/>
         <Tab.Screen name={'CreateEvent'} component={CreateEventScreen}
+                    options={{headerShown: false, tabBarShowLabel: false, tabBarHideOnKeyboard: true}}/>
+        <Tab.Screen name={'Like'} component={BookMarkListScreen}
                     options={{headerShown: false, tabBarShowLabel: false}}/>
-        <Tab.Screen name={'Like'} component={FeedScreen} options={{headerShown: false, tabBarShowLabel: false}}/>
         <Tab.Screen name={'Profile'}
                     component={ProfileScreen}
                     options={{headerShown: false, tabBarShowLabel: false}}
@@ -148,7 +162,7 @@ export default function App({ route, navigation }) {
                         }}
           />
           <Stack.Screen name={'EventDetail'} component={EventDetailScreen}
-                        options={{
+                        options={({route, navigation}) => ({
                           headerShown: true,
                           headerTransparent: true,
                           tabBarShowLabel: false,
@@ -159,11 +173,28 @@ export default function App({ route, navigation }) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'เดียวมาตั้ง',
-                        }}
+                          title: "",
+                          headerTintColor: Colors.white,
+                          headerBackTitle: '',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
           />
           <Stack.Screen name={'EventReportList'} component={EventReportListScreen}
-                        options={{
+                        options={({route, navigation}) => ({
                           headerShown: true,
                           headerTransparent: true,
                           tabBarShowLabel: false,
@@ -174,10 +205,41 @@ export default function App({ route, navigation }) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'เดียวมาตั้ง',
-                        }}
+                          title: 'รายการกิจกรรมที่ถูกรายงาน',
+                        })}
           />
           <Stack.Screen name={'EventReport'} component={EventReportScreen}
+                        options={({route, navigation}) => ({
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: 'รายการข้อความรีพอร์ต',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
+          />
+
+          <Stack.Screen name={'EventList'} component={EventListScreen}
                         options={{
                           headerShown: true,
                           headerTransparent: true,
@@ -193,9 +255,165 @@ export default function App({ route, navigation }) {
                         }}
           />
 
-
+          <Stack.Screen name={'EditEvent'} component={EditEventScreen}
+                        options={({route, navigation}) => ({
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: '',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="md-close" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
+          />
           <Stack.Screen name={'Error'} component={ErrorScreen}
                         options={{headerShown: false, tabBarShowLabel: false}}/>
+
+          <Stack.Screen name={'ManageEvent'} component={ManageEventScreen} options={({route, navigation}) => ({
+            headerShown: true,
+            headerTransparent: true,
+            tabBarShowLabel: false,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.medium,
+              color: Colors.black,
+            },
+            title: "จัดการกิจกรรม",
+            headerTintColor: Colors.white,
+            headerBackTitle: '',
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{
+                  borderRadius: 100,
+                  backgroundColor: 'rgba(255,255,255,0.8)',
+                  width: 30,
+                  height: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                onPress={() => navigation.pop()}
+              >
+                <Ionicons name="md-close" size={25} color={Colors.black}/>
+              </TouchableOpacity>
+            )
+          })}/>
+
+          <Stack.Screen name={'ManageEventByOrg'} component={EventDetailForOrgScreen} options={({route, navigation}) => ({
+            headerShown: true,
+            headerTransparent: true,
+            tabBarShowLabel: false,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.medium,
+              color: Colors.black,
+            },
+            title: "จัดการกิจกรรม",
+            headerTintColor: Colors.white,
+            headerBackTitle: '',
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{
+                  borderRadius: 100,
+                  backgroundColor: 'rgba(255,255,255,0.8)',
+                  width: 30,
+                  height: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                onPress={() => navigation.pop()}
+              >
+                <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+              </TouchableOpacity>
+            )
+          })}/>
+
+          <Stack.Screen name={'EventListForOrg'} component={EventListForOrgScreen} options={({route, navigation}) => ({
+            headerShown: true,
+            headerTransparent: true,
+            tabBarShowLabel: false,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.medium,
+              color: Colors.black,
+            },
+            title: "กิจกรรมที่คุณเข้าร่วม",
+            headerTintColor: Colors.white,
+            headerBackTitle: '',
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{
+                  borderRadius: 100,
+                  backgroundColor: 'rgba(255,255,255,0.8)',
+                  width: 30,
+                  height: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                onPress={() => navigation.pop()}
+              >
+                <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+              </TouchableOpacity>
+            )
+          })}/>
+
+          <Stack.Screen name={'Scanner'} component={ScannerScreen} options={{headerShown: false}}/>
+
+          <Stack.Group screenOptions={{presentation: 'fullScreenModal'}}>
+            <Stack.Screen name={'GoogleMap'} component={MapScreen} options={({route, navigation}) => ({
+              headerShown: true,
+              headerTransparent: true,
+              tabBarShowLabel: false,
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: Fonts.bold,
+                fontSize: fontSize.primary,
+                color: Colors.black,
+              },
+              title: "เลือกสถานที่",
+              headerTintColor: Colors.white,
+              headerBackTitle: '',
+              headerLeft: () => (
+                <TouchableOpacity
+                  style={{
+                    borderRadius: 100,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    width: 30,
+                    height: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  onPress={() => navigation.pop()}
+                >
+                  <Ionicons name="md-close" size={25} color={Colors.black}/>
+                </TouchableOpacity>
+              )
+            })}/>
+          </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
