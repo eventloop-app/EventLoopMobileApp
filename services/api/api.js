@@ -233,6 +233,16 @@ class api {
     })
   }
 
+  getEventBySearch(keyword){
+    return apis({
+      method: "get",
+      url: `events/getEventByKeyword?keyword=${keyword}&pageSize=100`,
+    })
+  }
+
+
+
+
 
 
 
