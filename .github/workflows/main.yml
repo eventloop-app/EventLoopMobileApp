@@ -1,0 +1,42 @@
+name: PROD
+
+on:
+  push:
+    branches: [ main ]
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATEKEY }}
+          port: ${{ secrets.SERVERPORT }}
+          timeout: 20s
+          command_timeout: 5m
+          script: |
+            cd EventLoopMobileApp/
+            sudo kill -9 `sudo lsof -t -i:19002`
+            git pull
+            yarn
+            
+      - uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: "https://discord.com/api/webhooks/1014651514054262897/aAlSH2xaOT_ekFd0A88wWc0q4JngR8G5BtJoN9YSVV02posQKM5-5WY8-FpoM0YFmREi"
+          title: "Deploy Success"
+          image: "https://cdn.discordapp.com/attachments/1014617211308097668/1017689769116958730/unknown.png"
+          color: "0x77FF06"
+          status: success
+          
+      - uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: "https://discord.com/api/webhooks/1014651514054262897/aAlSH2xaOT_ekFd0A88wWc0q4JngR8G5BtJoN9YSVV02posQKM5-5WY8-FpoM0YFmREi"
+          image: "https://cdn.discordapp.com/attachments/1014617211308097668/1017689769116958730/unknown.png"
+          title: Deploy Failure
+          color: "0xFF0040"
+          status: failure
+        
