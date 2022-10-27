@@ -17,6 +17,7 @@ jobs:
           timeout: 20s
           command_timeout: 5m
           script: |
+            ls -la
             cd EventLoopMobileApp/
             sudo kill -9 `sudo lsof -t -i:19002`
             git pull
