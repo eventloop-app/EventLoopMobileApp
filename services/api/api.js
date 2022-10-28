@@ -240,6 +240,32 @@ class api {
     })
   }
 
+  getEventAttention(){
+    return apis({
+      method: "get",
+      url: `events/attention?pageSize=100`,
+    })
+  }
+
+  getEventByRang(lat, lng){
+    return apis({
+      method: "get",
+      url: `events/range?&pageSize=100&latitude=${lat}&longitude=${lng}&range=10`,
+    })
+  }
+
+  getEventByTag(selectTag){
+    console.log(selectTag)
+    const tags = selectTag?.map((item) => `&tags=${item}`).join('')
+    return apis({
+      method: "get",
+      url: `events/getEventByTag?pageSize=100${tags}`,
+    })
+  }
+
+
+
+
 
 
 

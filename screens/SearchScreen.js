@@ -178,7 +178,6 @@ const SearchScreen = ({route, navigation}) => {
             </View>
         }
 
-
         {
           (event && <FlatList
               data={event}

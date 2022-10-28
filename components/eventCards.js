@@ -3,6 +3,9 @@ import {Image, Text, TouchableOpacity, View} from "react-native";
 import Colors from "../constants/Colors";
 import Fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import {toBuddhistYear} from "../constants/Buddhist-year";
+import moment from "moment";
 
 const EventCards = ({event, onPress}) => {
   return (
@@ -53,6 +56,34 @@ const EventCards = ({event, onPress}) => {
               }}>
               {event.eventName}
             </Text>
+            <View style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}>
+              <Ionicons name={'calendar-sharp'} size={24} color={Colors.primary} />
+              <Text style={{
+                fontFamily: Fonts.primary,
+                fontSize: fontSize.primary,
+                color: Colors.black,
+                textAlign: 'left',
+                marginLeft: 5
+              }}>{toBuddhistYear(moment(event?.startDate), "DD/MM/YYYY")}</Text>
+            </View>
+            <View style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}>
+              <Ionicons name={'ios-time-outline'} size={24} color={Colors.primary} />
+              <Text style={{
+                fontFamily: Fonts.primary,
+                fontSize: fontSize.primary,
+                color: Colors.black,
+                textAlign: 'left',
+                marginLeft: 5
+              }}>{moment(event.startDate).format("HH:mm") + " - " + moment(event.endDate).format("HH:mm") + " น."}</Text>
+            </View>
           </View>
         </View>
       </View>

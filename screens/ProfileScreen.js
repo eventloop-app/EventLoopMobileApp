@@ -264,7 +264,7 @@ const ProfileScreen = (props) => {
 
         {
           userData?.role === "ADMIN" &&
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100}}>
             <TouchableOpacity activeOpacity={0.8} onPress={() => props.navigation.navigate('EventReportList')}>
               <View style={{
                 width: Platform.OS === "ios" ? 340 : 350,

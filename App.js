@@ -240,7 +240,7 @@ export default function App({route, navigation}) {
           />
 
           <Stack.Screen name={'EventList'} component={EventListScreen}
-                        options={{
+                        options={({route, navigation}) => ({
                           headerShown: true,
                           headerTransparent: true,
                           tabBarShowLabel: false,
@@ -251,8 +251,23 @@ export default function App({route, navigation}) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'เดียวมาตั้ง',
-                        }}
+                          title: 'รายการกิจกรมม',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
           />
 
           <Stack.Screen name={'EditEvent'} component={EditEventScreen}

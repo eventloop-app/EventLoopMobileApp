@@ -102,6 +102,7 @@ const EventDetailScreen = (props) => {
           console.log(user.data.role)
         }
       }).catch(error => {
+        getEvent()
         setUserData(null)
         console.log("GET USER")
         console.log(error)
@@ -441,38 +442,42 @@ const EventDetailScreen = (props) => {
                source={{uri: (eventInfo?.coverImageUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')}}
         />
       </View>
-      <View style={{position: 'absolute', top: 180, right: 20, zIndex: 60}}>
-        <TouchableOpacity
-          style={{
-            display: 'flex',
-            borderRadius: 100,
-            backgroundColor: 'rgba(255,255,255,0.9)',
-            width: 40,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={() => {
-            let indexOfBookMark = bookMark?.findIndex(bk => bk.id === eventInfo?.id)
-            api.stampBookMark({eventId: eventInfo?.id, memberId: userData?.id}).then(res => {
-              if (res.status === 200) {
-                if (indexOfBookMark >= 0) {
-                  console.log("UnBookMark")
-                  const newBookMark = bookMark.filter((bk, index) => index !== indexOfBookMark)
-                  setBookMark(newBookMark)
-                } else {
-                  console.log("SetBookMark")
-                  setBookMark([...bookMark, eventInfo])
+      {
+        userData &&
+        <View style={{position: 'absolute', top: 180, right: 20, zIndex: 60}}>
+          <TouchableOpacity
+            style={{
+              display: 'flex',
+              borderRadius: 100,
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+            onPress={() => {
+              let indexOfBookMark = bookMark?.findIndex(bk => bk.id === eventInfo?.id)
+              api.stampBookMark({eventId: eventInfo?.id, memberId: userData?.id}).then(res => {
+                if (res.status === 200) {
+                  if (indexOfBookMark >= 0) {
+                    console.log("UnBookMark")
+                    const newBookMark = bookMark.filter((bk, index) => index !== indexOfBookMark)
+                    setBookMark(newBookMark)
+                  } else {
+                    console.log("SetBookMark")
+                    setBookMark([...bookMark, eventInfo])
+                  }
                 }
-              }
-            })
-          }}
-        >
-          <Ionicons
-            name={bookMark?.findIndex(bk => bk.id === eventInfo?.id) >= 0 ? "ios-heart-sharp" : "ios-heart-outline"}
-            size={35} color={Colors.red}/>
-        </TouchableOpacity>
-      </View>
+              })
+            }}
+          >
+            <Ionicons
+              name={bookMark?.findIndex(bk => bk.id === eventInfo?.id) >= 0 ? "ios-heart-sharp" : "ios-heart-outline"}
+              size={35} color={Colors.red}/>
+          </TouchableOpacity>
+        </View>
+      }
+
       <View style={{
         position: 'relative',
         top: -20,
