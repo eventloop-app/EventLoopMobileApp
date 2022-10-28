@@ -56,7 +56,7 @@ const FeedScreen = (props) => {
       api.getUserDataById(res?.memberId).then(user => {
         if (user.status === 200) {
           setUserData(user.data)
-          getEventByTag(user.data.tags)
+          getEventByTag(user.data?.tags)
           console.log(user.data.tags)
         }
       }).catch(error => {
@@ -91,7 +91,7 @@ const FeedScreen = (props) => {
         // props.navigation.navigate('Error')
       }
     }).catch(error => {
-      console.error(error)
+      console.warn(error)
       // props.navigation.navigate('Error')
       return;
     })
@@ -103,7 +103,7 @@ const FeedScreen = (props) => {
         setEventsNearMe(res.data.content)
       }
     }).catch(error => {
-      console.error(error)
+      console.warn(error)
       // props.navigation.navigate('Error')
       return;
     })
@@ -115,7 +115,7 @@ const FeedScreen = (props) => {
         setEventsByTag(res.data.content)
       }
     }).catch(error => {
-      console.error(error)
+      console.warn(error)
       // props.navigation.navigate('Error')
       return;
     })
@@ -132,7 +132,7 @@ const FeedScreen = (props) => {
         // props.navigation.navigate('Error')
       }
     }).catch(error => {
-      console.error(error)
+      console.warn(error)
       // props.navigation.navigate('Error')
       return;
     })

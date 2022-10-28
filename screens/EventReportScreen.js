@@ -53,6 +53,23 @@ const EventReportScreen = (props) => {
     })
   }
 
+  const colseEvent = () => {
+    let data = {
+      eventId: eventInfo?.id,
+      adminId: props.route.params.memId,
+      status: "SHUTDOWN",
+      type: "กิจกรรมมีเนื้อหาเข้าค่ายมั่วสุ่ม",
+      remark: ""
+    }
+    api.suspendEvent(data).then(res => {
+      console.log(res.status)
+      if(res.status === 200){
+        getReports()
+        props.navigation.pop()
+      }
+    })
+  }
+
   const unSuspendEvent = () => {
     let data = {
       eventId: eventInfo.id,
@@ -167,7 +184,7 @@ const EventReportScreen = (props) => {
           <TouchableOpacity
             disabled={!(eventInfo?.updateAt > eventInfo?.createAt)}
             style={{margin: 5, justifyContent: 'center', alignItems: 'center'}}
-            onPress={() => console.log('asdasdsdasd')}>
+            onPress={() => colseEvent()}>
             <View style={{
               width: 180,
               height: 50,

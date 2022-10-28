@@ -27,6 +27,7 @@ const EventDetailScreen = (props) => {
   const [isReview, setIsReview] = useState(false)
   const [codeCheckIn, setCodeCheckIn] = useState(null)
   const [reviewMsg, setReviewMsg] = useState("")
+  const [reportMsg, setReportMsg] = useState("")
   const mapRef = createRef();
 
   useEffect(()=>{
@@ -125,10 +126,12 @@ const EventDetailScreen = (props) => {
       eventId: eventInfo?.id,
       memberId: userData?.id,
       type: "กิจกรรมไม่ตรงตามที่แจ้ง",
-      description: "จิ๊กโก๋เดบิตฮิตเอ็นเตอร์เทน อมาตยาธิปไตย เบลอคอนแท็คแอ็กชั่นเจ็ตสตีล ป่าไม้พลาซ่าไฟลท์ บ็อกซ์สตูดิโอ อินเตอร์ออร์แกนิกเฮียแอ็คชั่นแพกเกจ"
+      description: reportMsg
     }
     api.reportEvent(data).then(res => {
-      console.log(res)
+      if(res.status === 200){
+        setShowModelReport(false)
+      }
     })
   }
 
@@ -182,7 +185,7 @@ const EventDetailScreen = (props) => {
         alignItems: 'center'
       }}>
         <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>รายงานกิจกรรม</Text>
-        <TextInput multiline={true} placeholder={'ระบุสาเหตุของการรายงานกิจกรรมนี้'}
+        <TextInput multiline={true} defaultValue={reportMsg} onChangeText={(text) => setReportMsg(text)} placeholder={'ระบุสาเหตุของการรายงานกิจกรรมนี้'}
                    style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}/>
       </View>
       <View style={{flexDirection: 'row'}}>
