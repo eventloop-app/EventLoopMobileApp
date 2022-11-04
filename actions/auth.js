@@ -1,6 +1,6 @@
 import decode from "../services/jwt/decode";
 import storages from "../services/storage/storages";
-import {REGISTER_SUCCESS, SIGN_IN_SUCCESS, SIGN_OUT} from "./types";
+import {GET_USERINFO, REGISTER_SUCCESS, SIGN_IN_SUCCESS, SIGN_OUT} from "./types";
 
 export const SignIn = (accessToken, refreshToken, idToken) => (dispatch) => {
   const user = decode.jwt(idToken)
@@ -10,18 +10,25 @@ export const SignIn = (accessToken, refreshToken, idToken) => (dispatch) => {
     idToken: idToken
   }))
   dispatch({type: SIGN_IN_SUCCESS, payload: user})
-  return;
 }
 
 export const SignOut = () => (dispatch) => {
   console.log("SIGN_OUT")
-  dispatch({type: SIGN_OUT, payload: null})
-  return;
+  storages.remove('userToken')
+  storages.remove('Token')
+  storages.remove('userInfo')
+  dispatch({type: SIGN_OUT})
 }
 
 export const RegisterSuccess = (data) => (dispatch) => {
-  console.log(data)
   storages.save('userInfo', JSON.stringify(data))
   dispatch({type: REGISTER_SUCCESS, payload: data})
-  return;
+}
+
+export const getUserInfo = () => (dispatch) => {
+  storages.getData('userInfo').then(res =>{
+    if(res !== undefined){
+      dispatch({type: GET_USERINFO, payload: JSON.parse(res)})
+    }
+  })
 }

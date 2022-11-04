@@ -6,7 +6,6 @@ const setup = (store) => {
     async (config) => {
       return config
     }, error => {
-
       return Promise.reject(error);
     })
 

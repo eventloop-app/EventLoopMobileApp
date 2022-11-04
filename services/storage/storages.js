@@ -4,7 +4,7 @@ import decode from "../jwt/decode";
 class storages  {
   save = async (key, value) => {
     try {
-      console.log("SAVE: " + key + " " + value)
+      console.log("SAVE: " + key )
       await AsyncStorage.setItem(key, value)
     } catch (error) {
       console.log("SaveStorageError:" + error);

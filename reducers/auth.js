@@ -1,15 +1,10 @@
-import {SIGN_IN_SUCCESS, SIGN_IN_FAIL, SIGN_OUT, REGISTER_SUCCESS} from '../actions/types'
+import {SIGN_IN_SUCCESS, SIGN_IN_FAIL, SIGN_OUT, REGISTER_SUCCESS, GET_USERINFO} from '../actions/types'
 import storages from "../services/storage/storages";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
 
 const initialState = {
-  authData: null,
+  authInfo: null,
   authError: null,
-  userInfo: storages.getData('userInfo').then(res => {
-    return res
-  }),
+  userInfo: null
 };
 
 export default function auth(state = initialState, action) {
@@ -17,11 +12,13 @@ export default function auth(state = initialState, action) {
   const {type, payload} = action;
   switch (type) {
     case SIGN_IN_SUCCESS:
-      return {...state, authData: payload};
+      return {...state, authInfo: payload};
     case REGISTER_SUCCESS:
       return {...state, userInfo: payload};
+    case GET_USERINFO:
+      return {...state, userInfo: payload};
     case SIGN_OUT:
-      return {...state, userInfo: null, authData: null};
+      return {...state, userInfo: null, authInfo: null};
     default:
       return {...state};
   }

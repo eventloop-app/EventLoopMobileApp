@@ -62,7 +62,6 @@ export default function App({route, navigation}) {
 
   useEffect(() => {
     registerForPushNotification().then(async token => {
-      console.log(token)
       await setToken(token)
       await setIsLoad(false)
     }).catch(e => {
