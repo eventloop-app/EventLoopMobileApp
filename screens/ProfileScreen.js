@@ -34,6 +34,7 @@ const ProfileScreen = (props) => {
     const {userInfo} = useSelector(state => state.auth)
     const [showModel, setShowModel] = useState(false)
     const translation = useRef(new Animated.Value(450)).current;
+    const [isLogin, setIsLogin] = useState(false)
 
     useFocusEffect(
         useCallback(() => {
@@ -50,8 +51,12 @@ const ProfileScreen = (props) => {
     );
 
     useEffect(() => {
-        if (authInfo === null) {
+        console.log('getUserInfo')
+        console.log(userInfo)
+        if (authInfo === null && userInfo === null) {
             dispatch(getUserInfo())
+        }else{
+            setIsLogin(true)
         }
     }, [userInfo])
 
@@ -64,6 +69,7 @@ const ProfileScreen = (props) => {
                     } else {
                         api.getUserDataById(authInfo.memberId).then(res => {
                             if (res.status === 200) {
+                                setIsLogin(true)
                                 dispatch(RegisterSuccess(res.data))
                             }
                         })
@@ -116,8 +122,9 @@ const ProfileScreen = (props) => {
 
     const signOut = () => {
         dispatch(SignOut())
+        setIsLogin(false)
         // setUserData(null)
-        // props.navigation.navigate("Profile")
+
     }
 
     const onShowModel = async () => {

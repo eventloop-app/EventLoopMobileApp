@@ -29,6 +29,8 @@ export const getUserInfo = () => (dispatch) => {
   storages.getData('userInfo').then(res =>{
     if(res !== undefined){
       dispatch({type: GET_USERINFO, payload: JSON.parse(res)})
+    }else{
+      dispatch({type: GET_USERINFO, payload: null})
     }
   })
 }

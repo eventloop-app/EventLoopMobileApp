@@ -1,71 +1,19 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, FlatList, Image, Platform, ScrollView, StatusBar, Text, TouchableOpacity, View} from "react-native";
-import api from "../services/api/api";
-import EventCards from "../components/eventCards";
-import Colors from "../constants/Colors";
-import {FlashList} from "@shopify/flash-list";
+import {View} from "react-native";
 import storages from "../services/storage/storages";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch} from "react-redux";
 import {Token} from "../actions/token";
-import Fonts from "../constants/Fonts";
-import FontSize from "../constants/FontSize";
-import EventCardHorizon from "../components/EventCardHorizon";
-import * as Location from 'expo-location';
 
 const FeedScreen = (props) => {
   const dispatch = useDispatch();
-  const [events, setEvents] = useState(null)
-  const [isLoad, setIsLoad] = useState(true)
-  const [userData, setUserData] = useState(null)
-  const [eventAttention, setEventAttention] = useState(null)
-  const [eventsNearMe, setEventsNearMe] = useState(null)
-  const [eventsByTag, setEventsByTag] = useState(null)
-  const [location, setLocation] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      let {status} = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      await setLocation(location);
-      await getEventNearMe(location.coords.latitude, location.coords.longitude)
-      setTimeout(() => {
-        setIsLoad(false)
-      }, 5000)
-    })();
-  }, []);
 
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
-      // The screen is focused
-      // Call any action
       console.log('Hello')
-      checkHasUser()
-      getAllEvent()
     });
-    // Return the function to unsubscribe from the event so it gets removed on unmount
     return unsubscribe;
   }, [props.navigation]);
-
-  const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-          getEventByTag(user.data?.tags)
-          console.log(user.data.tags)
-        }
-      }).catch(error => {
-        setUserData(null)
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
-  }
 
   useEffect(() => {
     storages.getData('Token').then(res => {
@@ -75,68 +23,6 @@ const FeedScreen = (props) => {
     })
   }, [])
 
-  useEffect(() => {
-    getAllEvent()
-    getEventAttention()
-  }, [])
-
-  const getEventAttention = () => {
-    api.getEventAttention().then(async res => {
-      if (res.status === 200 && res.data.content.length > 0) {
-        setEventAttention(res.data.content)
-
-      } else {
-        // console.error("Data is empty!!")
-
-        // props.navigation.navigate('Error')
-      }
-    }).catch(error => {
-      console.warn(error)
-      // props.navigation.navigate('Error')
-      return;
-    })
-  }
-
-  const getEventNearMe = (lat, lng) => {
-    api.getEventByRang(lat, lng).then(async res => {
-      if (res.status === 200 && res.data.content.length > 0) {
-        setEventsNearMe(res.data.content)
-      }
-    }).catch(error => {
-      console.warn(error)
-      // props.navigation.navigate('Error')
-      return;
-    })
-  }
-
-  const getEventByTag = (tags) => {
-    api.getEventByTag(tags).then(async res => {
-      if (res.status === 200) {
-        setEventsByTag(res.data.content)
-      }
-    }).catch(error => {
-      console.warn(error)
-      // props.navigation.navigate('Error')
-      return;
-    })
-  }
-
-  const getAllEvent = () => {
-    api.getAllEvents().then(async res => {
-      if (res.status === 200 && res.data.content.length > 0) {
-        setEvents(res.data.content)
-
-      } else {
-        // console.error("Data is empty!!")
-
-        // props.navigation.navigate('Error')
-      }
-    }).catch(error => {
-      console.warn(error)
-      // props.navigation.navigate('Error')
-      return;
-    })
-  }
 
   return (
       <View>
