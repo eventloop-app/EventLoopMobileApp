@@ -1,19 +1,28 @@
-import React, {useEffect, useState} from 'react';
-import {View} from "react-native";
+import React, {useCallback, useEffect, useState} from 'react';
+import {ScrollView, Text, View} from "react-native";
 import storages from "../services/storage/storages";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {Token} from "../actions/token";
+import {getUserInfo} from "../actions/auth";
+import {useFocusEffect} from "@react-navigation/native";
+import api from "../services/api/api";
+import {FlashList} from "@shopify/flash-list";
+import EventCards from "../components/eventCards";
 
 const FeedScreen = (props) => {
+  const [isLoad, setIsLoad] = useState(true)
   const dispatch = useDispatch();
-
-
-  useEffect(() => {
-    const unsubscribe = props.navigation.addListener('focus', () => {
-      console.log('Hello')
-    });
-    return unsubscribe;
-  }, [props.navigation]);
+  const {userInfo} = useSelector(state => state.auth)
+  const [allEvent, setAllEvent] = useState(null)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Feed: GetUserInfo')
+      dispatch(getUserInfo())
+      return () => {
+        console.log('Feed: Unmount')
+      };
+    }, [])
+  );
 
   useEffect(() => {
     storages.getData('Token').then(res => {
@@ -23,11 +32,51 @@ const FeedScreen = (props) => {
     })
   }, [])
 
+  useEffect(() => {
+    console.log('Feed: GetUserInfo')
+    dispatch(getUserInfo())
+  }, [])
+
+  useEffect(() => {
+    console.log('Feed: GetAllEvent')
+    api.getAllEvents().then(res => {
+      if (res.status === 200) {
+        setAllEvent(res.data.content)
+        setIsLoad(false)
+      }
+    })
+  }, [])
 
   return (
-      <View>
-
-      </View>
+    <View>
+      {
+        !isLoad &&
+          <FlashList
+            horizontal={true}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            data={allEvent}
+            refreshing={false}
+            renderItem={({item}) => {
+              return (
+                <EventCards event={item}
+                            onPress={() => props.navigation.navigate('EventDetail', {event: item})}/>
+              )
+            }}
+            estimatedItemSize={320}
+          />
+      //   <ScrollView
+      //   contentContainerStyle={{paddingBottom: 220,}}
+      //   showsVerticalScrollIndicator={false}
+      //   showsHorizontalScrollIndicator={false}
+      //   style={{
+      //   flex: 1,
+      //   paddingTop: 170,
+      //   backgroundColor: Colors.white
+      // }}>
+      //   </ScrollView>
+      }
+    </View>
     // !isLoad ?
     //   <View
     //     style={{

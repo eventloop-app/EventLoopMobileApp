@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, Text, TouchableOpacity, View} from "react-native";
 import Colors from "../constants/Colors";
 import Fonts from "../constants/Fonts";
@@ -6,14 +6,84 @@ import fontSize from "../constants/FontSize";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {toBuddhistYear} from "../constants/Buddhist-year";
 import moment from "moment";
+import api from "../services/api/api";
 
 const EventCards = ({event, onPress}) => {
+  const [userJoin, setUserJoin] = useState(null)
+  const [isLoad, setIsLoad] = useState(true)
+  useEffect(() => {
+    // console.log(event)
+    api.getRegMem({eventId: event.id}).then(res => {
+      // console.log(res.data)
+      setUserJoin(res.data)
+      setIsLoad(false)
+    })
+  }, [])
+
+  const renderPersonIcon = () => {
+    let view = []
+    let num = 30
+    for (let i = 0; i < (userJoin.length > 3 ? 3 : userJoin.length); i++) {
+      num = num + (i === 0 ? 0 : 12)
+      view.push(<View key={i} style={{
+        position: 'absolute',
+        width: 25,
+        height: 25,
+        borderRadius: 25,
+        backgroundColor: 'red',
+        top: 0,
+        left: num,
+        bottom: 0,
+        right: 0,
+        overflow: "hidden"
+      }}>
+        <Image
+          style={{
+            width: '100%',
+            height: '100%',
+            resizeMode: 'cover'
+          }}
+          source={{
+            uri: (userJoin[i]?.profileUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1037860726301282334/user.png')
+          }}
+        />
+      </View>)
+    }
+    if(userJoin?.length > 3){
+      view.push(<View key={4} style={{
+        position: 'absolute',
+        width: 40,
+        height: 25,
+        borderRadius: 25,
+        top: 0,
+        left: 80,
+        bottom: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignContent:'center',
+        alignItems:'center',
+        overflow: "hidden"
+      }}>
+        <Text style={{
+          fontFamily: Fonts.bold,
+          fontSize: fontSize.small,
+          color: Colors.gray2,
+        }}>
+          {
+            `+${userJoin?.length - 3}`
+          }
+        </Text>
+      </View>)
+    }
+
+    return view
+  }
   return (
     <TouchableOpacity activeOpacity={1} onPress={onPress}>
-      <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: 250}}>
+      <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: 280}}>
         <View style={{
           width: 210,
-          height: 240,
+          height: 270,
           borderRadius: 15,
           padding: 5,
           shadowColor: "#000",
@@ -30,7 +100,7 @@ const EventCards = ({event, onPress}) => {
             alignItems: 'center',
             margin: 3,
             borderRadius: 15,
-            height: "60%",
+            height: "50%",
             overflow: 'hidden',
             backgroundColor: Colors.gray
           }}>
@@ -51,17 +121,18 @@ const EventCards = ({event, onPress}) => {
               numberOfLines={1}
               style={{
                 fontFamily: Fonts.bold,
-                fontSize: fontSize.small,
+                fontSize: fontSize.primary,
                 color: Colors.black,
               }}>
               {event.eventName}
             </Text>
             <View style={{
+              marginTop: 4,
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
             }}>
-              <Ionicons name={'calendar-sharp'} size={24} color={Colors.primary} />
+              <Ionicons name={'calendar-sharp'} size={24} color={Colors.primary}/>
               <Text style={{
                 fontFamily: Fonts.primary,
                 fontSize: fontSize.primary,
@@ -71,11 +142,12 @@ const EventCards = ({event, onPress}) => {
               }}>{toBuddhistYear(moment(event?.startDate), "DD/MM/YYYY")}</Text>
             </View>
             <View style={{
+              marginTop: 4,
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
             }}>
-              <Ionicons name={'ios-time-outline'} size={24} color={Colors.primary} />
+              <Ionicons name={'ios-time-outline'} size={24} color={Colors.primary}/>
               <Text style={{
                 fontFamily: Fonts.primary,
                 fontSize: fontSize.primary,
@@ -83,6 +155,25 @@ const EventCards = ({event, onPress}) => {
                 textAlign: 'left',
                 marginLeft: 5
               }}>{moment(event.startDate).format("HH:mm") + " - " + moment(event.endDate).format("HH:mm") + " น."}</Text>
+            </View>
+            <View style={{
+              marginTop: 4,
+              position: 'relative',
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}>
+              <Ionicons name={'person'} size={24} color={Colors.primary}/>
+              {!isLoad &&
+                renderPersonIcon()
+              }
+              {/*<Text style={{*/}
+              {/*  fontFamily: Fonts.bold,*/}
+              {/*  fontSize: fontSize.small,*/}
+              {/*  color: Colors.gray2,*/}
+              {/*  textAlign: 'left',*/}
+              {/*  marginLeft: 60*/}
+              {/*}}>{`${userJoin?.length}`}</Text>*/}
             </View>
           </View>
         </View>

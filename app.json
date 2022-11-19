@@ -32,13 +32,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.eventloop.EventLoopV3"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.eventloop.EventLoopV3"
     },
     "web": {
       "favicon": "./assets/favicon.png"

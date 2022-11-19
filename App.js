@@ -62,7 +62,9 @@ export default function App({route, navigation}) {
 
   useEffect(() => {
     registerForPushNotification().then(async token => {
-      await setToken(token)
+      if(token !== undefined){
+        await setToken(token)
+      }
       await setIsLoad(false)
     }).catch(e => {
       console.warn(e)
@@ -83,12 +85,17 @@ export default function App({route, navigation}) {
   }, [])
 
   const registerForPushNotification = async () => {
-    const {status} = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permission to access location was denied');
-      return;
-    } else {
-      return (await Notifications.getExpoPushTokenAsync()).data
+    try {
+      const {status} = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        return;
+      } else {
+        return (await Notifications.getExpoPushTokenAsync()).data
+      }
+    }catch (e) {
+      setToken('NOT TOKEN')
+      console.log(`Can't get expo token`)
     }
   }
 

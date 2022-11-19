@@ -3,9 +3,11 @@ import {GET_TOKEN, SAVE_TOKEN_SUCCESS} from "./types";
 
 
 export const Token = (token) => (dispatch) => {
-  console.log("SAVE TOKEN")
-  storages.save('Token', token)
-  dispatch({type: SAVE_TOKEN_SUCCESS, payload: token})
+  if(token !== undefined && token !== null){
+    console.log("SAVE TOKEN")
+    storages.save('Token', token)
+    dispatch({type: SAVE_TOKEN_SUCCESS, payload: token})
+  }
 }
 
 export const getToken = (token) => (dispatch) => {
