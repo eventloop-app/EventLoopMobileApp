@@ -16,7 +16,6 @@ const EventCards = ({event, onPress}) => {
   useEffect(() => {
     // console.log(event)
     api.getRegMem({eventId: event.id}).then(res => {
-      // console.log(res.data)
       setUserJoin(res.data)
       setIsLoad(false)
     })
@@ -25,6 +24,7 @@ const EventCards = ({event, onPress}) => {
   const renderPersonIcon = () => {
     let view = []
     let num = 30
+    userJoin.reverse()
     for (let i = 0; i < (userJoin.length > 3 ? 3 : userJoin.length); i++) {
       num = num + (i === 0 ? 0 : 12)
       view.push(<View key={i} style={{
@@ -76,7 +76,6 @@ const EventCards = ({event, onPress}) => {
         </Text>
       </View>)
     }
-
     return view
   }
   return (

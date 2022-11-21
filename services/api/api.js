@@ -272,6 +272,14 @@ class api {
     })
   }
 
+  followMember(data){
+    return apis({
+      method: "post",
+      url: `/members/follow`,
+      data: data
+    })
+  }
+
 
 
 

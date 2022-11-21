@@ -32,6 +32,7 @@ import ScannerScreen from "./screens/ScannerScreen";
 import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
 import EventListForOrgScreen from "./screens/EventListForOrgScreen";
 import api from "./services/api/api";
+import MemberProfileScreen from "./screens/MemberProfileScreen";
 
 moment().locale('th')
 
@@ -84,17 +85,6 @@ export default function App({route, navigation}) {
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, [])
-
-  const checkBookmarkEvent = (nav, memId, eveId, check = false) => {
-    let isCheck
-    api.isBookMark({memberId: memId, eventId: eveId}).then(res =>{
-      isCheck = false
-    },error => {
-      console.log(error)
-    })
-
-
-  }
 
   const registerForPushNotification = async () => {
     try {
@@ -457,6 +447,37 @@ export default function App({route, navigation}) {
               title: "เลือกสถานที่",
               headerTintColor: Colors.white,
               headerBackTitle: '',
+              headerLeft: () => (
+                <TouchableOpacity
+                  style={{
+                    borderRadius: 100,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    width: 30,
+                    height: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  onPress={() => navigation.pop()}
+                >
+                  <Ionicons name="md-close" size={25} color={Colors.black}/>
+                </TouchableOpacity>
+              )
+            })}/>
+
+            <Stack.Screen name={'MemberProfile'} component={MemberProfileScreen} options={({route, navigation}) => ({
+              headerShown: true,
+              headerTransparent: true,
+              tabBarShowLabel: false,
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: Fonts.bold,
+                fontSize: fontSize.medium,
+                color: Colors.black,
+              },
+              title: "",
+              headerTintColor: Colors.white,
+              headerBackTitle: '',
+              headerBackVisible: false,
               headerLeft: () => (
                 <TouchableOpacity
                   style={{

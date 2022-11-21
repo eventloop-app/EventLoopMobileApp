@@ -1,5 +1,16 @@
 import React, {createRef, useEffect, useState} from 'react';
-import {Image, ScrollView, Text, TextInput, TouchableOpacity, View, Dimensions} from "react-native";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Keyboard,
+  Animated,
+  Platform
+} from "react-native";
 import Colors from "../constants/Colors";
 import EventIcons from "../components/eventIcons";
 import api from "../services/api/api";
@@ -7,7 +18,7 @@ import Fonts from "../constants/Fonts";
 import FontSize from "../constants/FontSize";
 import moment from "moment/moment";
 import Mappin from "../assets/images/pin.png";
-import MapView, {Marker} from "react-native-maps";
+import MapView, { Marker} from "react-native-maps";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import fontSize from "../constants/FontSize";
 import {useNavigation} from "@react-navigation/native";
@@ -19,7 +30,6 @@ const weekdays = 'อาทิตย์_จันทร์_อังคาร_�
 const EventDetailScreen = (props) => {
   const {userInfo} = useSelector(state => state.auth)
   const [eventInfo, setEventinfo] = useState(null)
-  const [bookMark, setBookMark] = useState(null)
   const [showModelReport, setShowModelReport] = useState(false)
   const [showModelConfirm, setShowModelConfirm] = useState(false)
   const [showModelCheckIn, setShowModelCheckIn] = useState(false)
@@ -33,11 +43,35 @@ const EventDetailScreen = (props) => {
   const navigation = useNavigation();
   const mapRef = createRef();
   const dispatch = useDispatch();
+  const [keyboardStatus, setKeyboardStatus] = useState(undefined);
+  const [isLoad, setIsLoad] = useState(true)
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardStatus(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardStatus(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    checkHasUser()
+  }, [])
 
   useEffect(()=>{
     api.getEventById(props.route.params.event.id).then(res =>{
       if(res.status === 200){
         setEventinfo(res.data)
+        setTimeout(()=>{
+          setIsLoad(false)
+        },500)
       }else{
         navigation.navigate('Error')
       }
@@ -51,12 +85,13 @@ const EventDetailScreen = (props) => {
   },[props])
 
   useEffect(() => {
-    checkHasUser()
-  }, [])
-
-  useEffect(() => {
     if (userInfo !== null && eventInfo !== null) {
       checkRegisterEvent()
+    }
+  }, [eventInfo])
+
+  useEffect(()=>{
+    if(!isLoad){
       setTimeout(()=>{
         mapRef?.current?.animateToRegion({
           latitude: parseFloat(eventInfo?.location?.latitude),
@@ -66,13 +101,7 @@ const EventDetailScreen = (props) => {
         })
       },500)
     }
-  }, [eventInfo])
-
-  const getBookMark = (memId) => {
-    api.getBookMark({memberId: memId}).then((res) => {
-      setBookMark(res.data)
-    })
-  }
+  },[isLoad])
 
   const getIsCheckIn = () =>{
     let data = {
@@ -169,29 +198,43 @@ const EventDetailScreen = (props) => {
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(0,0,0,0.25)',
-      zIndex: 50
+      zIndex: 50,
     }}>
-      <View style={{
+      <Animated.View style={{
+        position: 'relative',
         width: 300,
         height: 250,
         backgroundColor: Colors.white,
         borderRadius: 15,
         padding: 10,
-        alignItems: 'center'
+        alignItems: 'center',
+        transform: [{translateY: Platform.OS === 'ios' ? keyboardStatus ? -80 : 0 : 0}]
       }}>
-        <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>รายงานกิจกรรม</Text>
-        <TextInput multiline={true} defaultValue={reportMsg} onChangeText={(text) => setReportMsg(text)} placeholder={'ระบุสาเหตุของการรายงานกิจกรรมนี้'}
-                   style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}/>
-      </View>
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => submitReport()}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
-                          onPress={() => setShowModelReport(!showModelReport)}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
-        </TouchableOpacity>
-      </View>
+        <View>
+          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium, textAlign: 'center'}}>รายงานกิจกรรม</Text>
+          <TextInput multiline={true} maxLength={100} defaultValue={reportMsg} onChangeText={(text) => {
+            console.log(text.length)
+              setReportMsg(text)
+          }} placeholder={'ระบุสาเหตุของการรายงานกิจกรรมนี้'}
+                     style={{marginTop:10, fontFamily: Fonts.bold, fontSize: fontSize.primary}}/>
+        </View>
+        <View style={{position: 'absolute',bottom: 75, right: 20}}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.vary_small, color: Colors.gray2}}>{`${reportMsg.length}/100`}</Text>
+        </View>
+        <View style={{position: 'absolute',bottom: -35, flexDirection: 'row'}}>
+          <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
+                            onPress={() => {
+                              setReportMsg("")
+                              setShowModelReport(!showModelReport)
+                            }}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitReport()}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color:(reportMsg.length > 20 ? Colors.primary :  Colors.gray2)}}>ยืนยัน</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
     </View>
   )
 
@@ -209,24 +252,25 @@ const EventDetailScreen = (props) => {
     }}>
       <View style={{
         width: isRegister ? 320 : 270,
-        height: 125,
+        height: 150,
         backgroundColor: Colors.white,
         borderRadius: 15,
-        justifyContent: 'center',
+        // justifyContent: 'center',
         alignItems: 'center'
       }}>
         <Text style={{
+          marginTop: 50,
           fontFamily: Fonts.bold,
           fontSize: FontSize.medium
         }}>{isRegister ? 'ยืนยันการยกเลิกเข้าร่วมกิจกรรม' : 'ยืนยันการเข้าร่วมกิจกรรม'}</Text>
       </View>
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => submitRegisterEvent()}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
+        <TouchableOpacity style={{position: 'relative', bottom: 50,margin: 10 }}
                           onPress={() => setShowModelConfirm(!showModelConfirm)}>
           <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitRegisterEvent()}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -286,7 +330,7 @@ const EventDetailScreen = (props) => {
         <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>เช็คอินกิจกรรม</Text>
         <View style={{flex: 1, justifyContent: 'center', marginTop: -30}}>
           <TextInput defaultValue={codeCheckIn} keyboardType={'number-pad'} maxLength={6} multiline={true} placeholder={'กรอกรหัสเช็คอินกิจกรรม'}
-                     style={{fontFamily: Fonts.bold, fontSize: fontSize.primary, textAlign: 'center'}}/>
+                     style={{fontFamily: Fonts.bold, fontSize: fontSize.big, textAlign: 'center'}}/>
         </View>
 
         <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => props.navigation.navigate('Scanner')}>
@@ -294,12 +338,12 @@ const EventDetailScreen = (props) => {
         </TouchableOpacity>
       </View>
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => submitCheckIn()}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
                           onPress={() => setShowModelCheckIn(!showModelCheckIn)}>
           <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitCheckIn()}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -317,30 +361,36 @@ const EventDetailScreen = (props) => {
       backgroundColor: 'rgba(0,0,0,0.25)',
       zIndex: 50
     }}>
-      <View style={{
+      <Animated.View style={{
         width: 300,
         height: 250,
         backgroundColor: Colors.white,
         borderRadius: 15,
         padding: 10,
-        alignItems: 'center'
-
+        alignItems: 'center',
+        transform: [{translateY: Platform.OS === 'ios' ? keyboardStatus ? -80 : 0 : 0}]
       }}>
         <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>รีวิวกิจกรรม</Text>
-        <View style={{flex: 1, justifyContent: 'center', marginTop: -30}}>
-          <TextInput defaultValue={reviewMsg} multiline={false} onChangeText={(text)=> setReviewMsg(text)} placeholder={'บอกความรู้สึกที่ได้เข้าร่วมกิจกรรม'}
-                     style={{fontFamily: Fonts.bold, fontSize: fontSize.primary, textAlign: 'center'}}/>
+        <View style={{flex: 1, marginTop: 10}}>
+          <TextInput defaultValue={reviewMsg} multiline={true} maxLength={100} onChangeText={(text)=> setReviewMsg(text)} placeholder={'บอกความรู้สึกที่ได้เข้าร่วมกิจกรรม'}
+                     style={{fontFamily: Fonts.bold, fontSize: fontSize.primary, textAlign: 'left'}}/>
         </View>
-      </View>
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => submitReview()}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
-                          onPress={() => setShowModelReview(!showModelReview)}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={{position: 'absolute',bottom: 75, right: 20}}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.vary_small, color: Colors.gray2}}>{`${reviewMsg.length}/100`}</Text>
+        </View>
+        <View style={{position: 'absolute',bottom: -35, flexDirection: 'row'}}>
+          <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}}
+                            onPress={() => {
+                              setReviewMsg("")
+                              setShowModelReview(!showModelReview)
+                            }}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitReview()}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </View>
   )
 
@@ -433,6 +483,7 @@ const EventDetailScreen = (props) => {
   }
 
   return (
+    !isLoad ?
     <View style={{flex: 1, backgroundColor: Colors.white}}>
       {
         showModelReport && modelReport()
@@ -562,11 +613,11 @@ const EventDetailScreen = (props) => {
               </View>
             </View>
 
-            <View style={{width: '100%', height: 30, justifyContent: 'center', alignItems: 'center'}}>
-              <View style={{borderWidth: 1, width: "90%", borderColor: Colors.gray2}}></View>
-            </View>
+            {/*<View style={{width: '100%', height: 30, justifyContent: 'center', alignItems: 'center'}}>*/}
+            {/*  <View style={{borderWidth: 1, width: "90%", borderColor: Colors.gray2}}></View>*/}
+            {/*</View>*/}
 
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: 10}}>
+            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: 10, marginTop: 10}}>
               <View style={{
                 width: 50,
                 height: 50,
@@ -705,30 +756,32 @@ const EventDetailScreen = (props) => {
                 กิจกรรมนี้จัดโดย
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 5, marginLeft: 10}}>
-                <View style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 10,
-                  backgroundColor: 'rgba(214, 234, 248, 0.5)',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  overflow: 'hidden'
-                }}>
-                  <Image style={{width: '100%', height: '100%'}}
-                         source={{
-                           uri: eventInfo?.profileUrl
-                         }}
-                  />
-                </View>
-                <View style={{marginLeft: 10}}>
-                  <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-                    <Text style={{
-                      fontFamily: Fonts.bold,
-                      fontSize: FontSize.small,
-                      color: Colors.black
-                    }}>{eventInfo?.username}</Text>
+                <TouchableOpacity disabled={userInfo === null} onPress={()=> navigation.navigate('MemberProfile', {orgPro: eventInfo.organizerId, user: userInfo.id})} style={{flexDirection: 'row', justifyContent: 'center', alignItems:"center"}}>
+                  <View style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 10,
+                    backgroundColor: 'rgba(214, 234, 248, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden'
+                  }}>
+                    <Image style={{width: '100%', height: '100%'}}
+                           source={{
+                             uri: eventInfo?.profileUrl
+                           }}
+                    />
                   </View>
-                </View>
+                  <View style={{marginLeft: 10}}>
+                    <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                      <Text style={{
+                        fontFamily: Fonts.bold,
+                        fontSize: FontSize.small,
+                        color: Colors.black
+                      }}>{eventInfo?.username}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
 
               <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 5, marginLeft: 10}}>
@@ -748,7 +801,7 @@ const EventDetailScreen = (props) => {
                       fontFamily: Fonts.bold,
                       fontSize: FontSize.small,
                       color: Colors.black
-                    }}>{eventInfo?.email}</Text>
+                    }}>{eventInfo?.email.toLowerCase()}</Text>
                   </View>
                 </View>
               </View>
@@ -768,7 +821,30 @@ const EventDetailScreen = (props) => {
           </ScrollView>
         </View>
       </View>
-    </View>
+    </View>:
+      <View style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        zIndex: 50
+      }}>
+        <View style={{
+          width: 200,
+          height: 150,
+          backgroundColor: Colors.white,
+          borderRadius: 15,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>กำลังโหลดข้อมูล</Text>
+        </View>
+
+      </View>
   );
 };
 

@@ -28,7 +28,7 @@ export const RegisterSuccess = (data) => (dispatch) => {
 export const getUserInfo = () => (dispatch) => {
   storages.getData('userInfo').then(res =>{
     if(res !== undefined){
-      console.log( JSON.parse(res))
+      // console.log( JSON.parse(res))
       dispatch({type: GET_USERINFO, payload: JSON.parse(res)})
     }else{
       dispatch({type: GET_USERINFO, payload: null})
