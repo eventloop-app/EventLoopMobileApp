@@ -10,7 +10,7 @@ export const Token = (token) => (dispatch) => {
   }
 }
 
-export const getToken = (token) => (dispatch) => {
+export const getToken = () => (dispatch) => {
   console.log("GET TOKEN")
   storages.getData('Token').then(res =>{
     dispatch({type: GET_TOKEN, payload: res})

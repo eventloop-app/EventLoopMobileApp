@@ -1,5 +1,5 @@
 import React, {createRef, useEffect, useState} from 'react';
-import {Image, ScrollView, Text, TextInput, TouchableOpacity, View, Dimensions, Platform,} from "react-native";
+import {Image, ScrollView, Text, TextInput, TouchableOpacity, View, Dimensions} from "react-native";
 import Colors from "../constants/Colors";
 import EventIcons from "../components/eventIcons";
 import api from "../services/api/api";
@@ -9,13 +9,15 @@ import moment from "moment/moment";
 import Mappin from "../assets/images/pin.png";
 import MapView, {Marker} from "react-native-maps";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import storages from "../services/storage/storages";
 import fontSize from "../constants/FontSize";
+import {useNavigation} from "@react-navigation/native";
+import {useDispatch, useSelector} from "react-redux";
+import {getUserInfo} from "../actions/auth";
 
 const weekdays = 'อาทิตย์_จันทร์_อังคาร_พุธ_พฤหัสบดี_ศุกร์_เสาร์'.split('_')
 
 const EventDetailScreen = (props) => {
-  const [userData, setUserData] = useState(null)
+  const {userInfo} = useSelector(state => state.auth)
   const [eventInfo, setEventinfo] = useState(null)
   const [bookMark, setBookMark] = useState(null)
   const [showModelReport, setShowModelReport] = useState(false)
@@ -28,7 +30,19 @@ const EventDetailScreen = (props) => {
   const [codeCheckIn, setCodeCheckIn] = useState(null)
   const [reviewMsg, setReviewMsg] = useState("")
   const [reportMsg, setReportMsg] = useState("")
+  const navigation = useNavigation();
   const mapRef = createRef();
+  const dispatch = useDispatch();
+
+  useEffect(()=>{
+    api.getEventById(props.route.params.event.id).then(res =>{
+      if(res.status === 200){
+        setEventinfo(res.data)
+      }else{
+        navigation.navigate('Error')
+      }
+    })
+  }, [])
 
   useEffect(()=>{
     if(props.route.params?.QRcode !== undefined && props.route.params?.QRcode !== null){
@@ -41,8 +55,16 @@ const EventDetailScreen = (props) => {
   }, [])
 
   useEffect(() => {
-    if (userData !== null && eventInfo !== null) {
+    if (userInfo !== null && eventInfo !== null) {
       checkRegisterEvent()
+      setTimeout(()=>{
+        mapRef?.current?.animateToRegion({
+          latitude: parseFloat(eventInfo?.location?.latitude),
+          longitude: parseFloat(eventInfo?.location?.longitude),
+          latitudeDelta: 0.00116193304764995,
+          longitudeDelta: 0.001165230321884155
+        })
+      },500)
     }
   }, [eventInfo])
 
@@ -54,7 +76,7 @@ const EventDetailScreen = (props) => {
 
   const getIsCheckIn = () =>{
     let data = {
-      memberId: userData?.id,
+      memberId: userInfo?.id,
       eventId: eventInfo?.id
     }
     api.isCheckIn(data).then(res =>{
@@ -66,7 +88,7 @@ const EventDetailScreen = (props) => {
 
   const getIsReview = () =>{
     let data = {
-      memberId: userData?.id,
+      memberId: userInfo?.id,
       eventId: eventInfo?.id
     }
     api.isReview(data).then(res =>{
@@ -79,13 +101,10 @@ const EventDetailScreen = (props) => {
   const checkRegisterEvent = () => {
     let data = {
       eventId: props.route.params?.event.id,
-      memberId: userData?.id,
+      memberId: userInfo?.id,
     }
-    console.log(data)
     api.isRegisterEvent(data).then(res => {
       if (res.status === 200) {
-        console.log('Is Register')
-        console.log(res.data.isRegister)
         setIsRegister(res.data.isRegister)
         getIsCheckIn()
         getIsReview()
@@ -94,37 +113,13 @@ const EventDetailScreen = (props) => {
   }
 
   const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(async user => {
-        if (user.status === 200) {
-          await setUserData(user.data)
-          await getEvent()
-          await getBookMark(user.data.id)
-          console.log(user.data.role)
-        }
-      }).catch(error => {
-        getEvent()
-        setUserData(null)
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
-  }
-
-  const getEvent = () => {
-    api.getEventById(props.route.params.event.id).then(res => {
-      if (res.status === 200) {
-        setEventinfo(res.data)
-        console.log('EVENT ID')
-        console.log(res.data.id)
-      }
-    })
+    dispatch(getUserInfo)
   }
 
   const submitReport = () => {
     let data = {
       eventId: eventInfo?.id,
-      memberId: userData?.id,
+      memberId: userInfo?.id,
       type: "กิจกรรมไม่ตรงตามที่แจ้ง",
       description: reportMsg
     }
@@ -138,7 +133,7 @@ const EventDetailScreen = (props) => {
   const submitRegisterEvent = () => {
     let data = {
       eventId: eventInfo?.id,
-      memberId: userData?.id,
+      memberId: userInfo?.id,
     }
 
     if (isRegister) {
@@ -240,7 +235,7 @@ const EventDetailScreen = (props) => {
   const submitCheckIn = () => {
     let data = {
       checkInCode: codeCheckIn,
-      memberId: userData?.id,
+      memberId: userInfo?.id,
       eventId: eventInfo?.id
     }
     api.checkIn(data).then(res => {
@@ -253,13 +248,11 @@ const EventDetailScreen = (props) => {
 
   const submitReview = () => {
     let data = {
-      memberId: userData?.id,
+      memberId: userInfo?.id,
       eventId: eventInfo?.id,
       score : 5,
       feedback : reviewMsg
     }
-    console.log(data)
-
     api.reviewEvent(data).then(res => {
       console.log(res.status)
       if(res.status === 200){
@@ -352,15 +345,15 @@ const EventDetailScreen = (props) => {
   )
 
   const renderButton = () => {
-    switch (userData?.role) {
+    switch (userInfo?.role) {
       case 'MEMBER':
         return (
-          ((moment().unix() * 1000) <= eventInfo?.startDate && userData?.id !== eventInfo?.organizerId) ?
+          ((moment().unix() * 1000) <= eventInfo?.startDate && userInfo?.id !== eventInfo?.organizerId) ?
             <View>
               <TouchableOpacity style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
                                 activeOpacity={0.8} onPress={() => setShowModelConfirm(true)}>
                 <View style={{
-                  width: 340,
+                  width: "89%",
                   height: 60,
                   backgroundColor: isRegister ? Colors.orange : Colors.primary,
                   borderRadius: 12,
@@ -378,7 +371,7 @@ const EventDetailScreen = (props) => {
               <TouchableOpacity style={{justifyContent: 'center', alignItems: 'center'}} activeOpacity={0.8}
                                 onPress={() => setShowModelReport(true)}>
                 <View style={{
-                  width: 340,
+                  width: "89%",
                   height: 60,
                   backgroundColor: Colors.yellow,
                   borderRadius: 12,
@@ -418,7 +411,24 @@ const EventDetailScreen = (props) => {
             )
         )
       default:
-        return
+        return (
+          <TouchableOpacity disabled={true} style={{justifyContent: 'center', alignItems: 'center'}}>
+            <View style={{
+              width: "90%",
+              height: 60,
+              backgroundColor: Colors.gray,
+              borderRadius: 12,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <Text style={{
+                fontFamily: Fonts.bold,
+                fontSize: FontSize.primary,
+                color: Colors.white
+              }}>คุณยังไม่ได้เข้าสู่ระบบ</Text>
+            </View>
+          </TouchableOpacity>
+        )
     }
   }
 
@@ -439,47 +449,50 @@ const EventDetailScreen = (props) => {
       {
         showModelReview && modelReview()
       }
-
       <View style={{width: '100%', height: 250}}>
         <Image style={{width: '100%', height: '100%'}}
                source={{uri: (eventInfo?.coverImageUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')}}
         />
       </View>
-      {
-        userData &&
-        <View style={{position: 'absolute', top: 180, right: 20, zIndex: 60}}>
-          <TouchableOpacity
-            style={{
-              display: 'flex',
-              borderRadius: 100,
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onPress={() => {
-              let indexOfBookMark = bookMark?.findIndex(bk => bk.id === eventInfo?.id)
-              api.stampBookMark({eventId: eventInfo?.id, memberId: userData?.id}).then(res => {
-                if (res.status === 200) {
-                  if (indexOfBookMark >= 0) {
-                    console.log("UnBookMark")
-                    const newBookMark = bookMark.filter((bk, index) => index !== indexOfBookMark)
-                    setBookMark(newBookMark)
-                  } else {
-                    console.log("SetBookMark")
-                    setBookMark([...bookMark, eventInfo])
-                  }
-                }
-              })
-            }}
-          >
-            <Ionicons
-              name={bookMark?.findIndex(bk => bk.id === eventInfo?.id) >= 0 ? "ios-heart-sharp" : "ios-heart-outline"}
-              size={35} color={Colors.red}/>
-          </TouchableOpacity>
-        </View>
-      }
+      {/*{*/}
+      {/*  userInfo &&*/}
+      {/*  <View style={{position: 'absolute', top: 180, right: 20, zIndex: 60}}>*/}
+      {/*    <TouchableOpacity*/}
+      {/*      style={{*/}
+      {/*        display: 'flex',*/}
+      {/*        borderRadius: 100,*/}
+      {/*        backgroundColor: 'rgba(255,255,255,0.9)',*/}
+      {/*        width: 40,*/}
+      {/*        height: 40,*/}
+      {/*        justifyContent: 'center',*/}
+      {/*        alignItems: 'center'*/}
+      {/*      }}*/}
+      {/*      onPress={() => {*/}
+      {/*        let indexOfBookMark = bookMark?.findIndex(bk => bk.id === eventInfo?.id)*/}
+      {/*        api.stampBookMark({eventId: eventInfo?.id, memberId: userInfo?.id}).then(res => {*/}
+      {/*          if (res.status === 200) {*/}
+      {/*            if (indexOfBookMark >= 0) {*/}
+      {/*              console.log("UnBookMark")*/}
+      {/*              const newBookMark = bookMark.filter((bk, index) => index !== indexOfBookMark)*/}
+      {/*              setBookMark(newBookMark)*/}
+      {/*            } else {*/}
+      {/*              console.log("SetBookMark")*/}
+      {/*              setBookMark([...bookMark, eventInfo])*/}
+      {/*            }*/}
+      {/*          }else{*/}
+      {/*            console.log(`can't set bookmark`)*/}
+      {/*          }*/}
+      {/*        }, error => {*/}
+      {/*          console.log(error)*/}
+      {/*        })*/}
+      {/*      }}*/}
+      {/*    >*/}
+      {/*      <Ionicons*/}
+      {/*        name={bookMark?.findIndex(bk => bk.id === eventInfo?.id) >= 0 ? "ios-heart-sharp" : "ios-heart-outline"}*/}
+      {/*        size={35} color={Colors.red}/>*/}
+      {/*    </TouchableOpacity>*/}
+      {/*  </View>*/}
+      {/*}*/}
 
       <View style={{
         position: 'relative',
@@ -510,7 +523,7 @@ const EventDetailScreen = (props) => {
               </Text>
             </View>
 
-            <View style={{margin: 10}}>
+            <View style={{marginLeft: 10}}>
               <Text
                 style={{
                   fontFamily: Fonts.bold,
@@ -532,7 +545,6 @@ const EventDetailScreen = (props) => {
                         padding: 4,
                         paddingHorizontal: 8,
                         marginHorizontal: 2,
-                        margin: 5
                       }}>
                         <Text style={{
                           fontFamily: Fonts.primary,
@@ -550,7 +562,11 @@ const EventDetailScreen = (props) => {
               </View>
             </View>
 
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', margin: 10}}>
+            <View style={{width: '100%', height: 30, justifyContent: 'center', alignItems: 'center'}}>
+              <View style={{borderWidth: 1, width: "90%", borderColor: Colors.gray2}}></View>
+            </View>
+
+            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: 10}}>
               <View style={{
                 width: 50,
                 height: 50,
@@ -586,56 +602,7 @@ const EventDetailScreen = (props) => {
               </View>
             </View>
 
-            <View style={{flexDirection: 'row', alignItems: 'center', height: 50, margin: 10}}>
-              <View style={{
-                width: 50,
-                height: 50,
-                borderRadius: 10,
-                backgroundColor: 'rgba(214, 234, 248, 0.5)',
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden'
-              }}>
-                <Image style={{width: '100%', height: '100%'}}
-                       source={{
-                         uri: eventInfo?.profileUrl
-                       }}
-                />
-              </View>
-              <View style={{marginLeft: 10}}>
-                <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-                  <Text style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
-                    color: Colors.black
-                  }}>{eventInfo?.username}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={{flexDirection: 'row', alignItems: 'center', height: 50, margin: 10}}>
-              <View style={{
-                width: 50,
-                height: 50,
-                borderRadius: 10,
-                backgroundColor: 'rgba(214, 234, 248, 0.5)',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <EventIcons source={'Ionicons'} name={'mail-open-outline'} color={Colors.primary} size={35}/>
-              </View>
-              <View style={{marginLeft: 10}}>
-                <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-                  <Text style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
-                    color: Colors.black
-                  }}>{eventInfo?.email}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', margin: 10}}>
+            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: 10, marginTop: 5}}>
               <View style={{
                 width: 50,
                 height: 50,
@@ -647,7 +614,7 @@ const EventDetailScreen = (props) => {
                 <EventIcons source={'Ionicons'} name={'calendar-sharp'} size={35} color={Colors.primary}/>
               </View>
               <View
-                style={{display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginLeft: 10}}>
+                style={{display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginLeft: 10, marginTop: 5}}>
                 <Text style={{
                   fontFamily: Fonts.bold,
                   fontSize: FontSize.primary
@@ -659,7 +626,7 @@ const EventDetailScreen = (props) => {
               </View>
             </View>
 
-            <View style={{flexDirection: 'row', alignItems: 'center', height: 50, margin: 10}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', height: 50, marginLeft: 10, marginTop: 5}}>
               <View style={{
                 width: 50,
                 height: 50,
@@ -673,7 +640,7 @@ const EventDetailScreen = (props) => {
                             size={35}
                             color={Colors.primary}/>
               </View>
-              <View style={{height: 50, marginLeft: 10, justifyContent: 'center'}}>
+              <View style={{height: 50, marginLeft: 10, justifyContent: 'center', width: "80%"}}>
                 <Text numberOfLines={1} style={{
                   fontFamily: Fonts.bold,
                   fontSize: FontSize.small
@@ -686,7 +653,7 @@ const EventDetailScreen = (props) => {
             </View>
             {
               ((eventInfo?.type === "ONSITE" && eventInfo?.location) &&
-                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
+                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 10}}>
                   <MapView
                     scrollDuringRotateOrZoomEnabled={false}
                     zoomControlEnabled={false}
@@ -718,11 +685,11 @@ const EventDetailScreen = (props) => {
                 </View>
               )
             }
-            <View style={{margin: 10}}>
+            <View style={{marginLeft:10}}>
               <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>
                 รายละเอียดกิจกรรม
               </Text>
-              <View style={{marginTop: 10}}>
+              <View style={{marginTop: 5, marginLeft:10}}>
                 <Text
                   style={{
                     fontFamily: Fonts.primary,
@@ -733,10 +700,62 @@ const EventDetailScreen = (props) => {
                 </Text>
               </View>
             </View>
+            <View style={{marginLeft: 10, marginTop: 10, marginBottom: 10}}>
+              <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>
+                กิจกรรมนี้จัดโดย
+              </Text>
+              <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 5, marginLeft: 10}}>
+                <View style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(214, 234, 248, 0.5)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden'
+                }}>
+                  <Image style={{width: '100%', height: '100%'}}
+                         source={{
+                           uri: eventInfo?.profileUrl
+                         }}
+                  />
+                </View>
+                <View style={{marginLeft: 10}}>
+                  <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: FontSize.small,
+                      color: Colors.black
+                    }}>{eventInfo?.username}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 5, marginLeft: 10}}>
+                <View style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(214, 234, 248, 0.5)',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <EventIcons source={'Ionicons'} name={'mail-open-outline'} color={Colors.primary} size={35}/>
+                </View>
+                <View style={{marginLeft: 10}}>
+                  <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: FontSize.small,
+                      color: Colors.black
+                    }}>{eventInfo?.email}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
             {
               renderButton()
             }
-
             {
               isReview &&
               <View style={{ alignItems: 'center'}}>

@@ -31,6 +31,7 @@ import BookMarkListScreen from "./screens/BookMarkListScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
 import EventListForOrgScreen from "./screens/EventListForOrgScreen";
+import api from "./services/api/api";
 
 moment().locale('th')
 
@@ -83,6 +84,17 @@ export default function App({route, navigation}) {
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, [])
+
+  const checkBookmarkEvent = (nav, memId, eveId, check = false) => {
+    let isCheck
+    api.isBookMark({memberId: memId, eventId: eveId}).then(res =>{
+      isCheck = false
+    },error => {
+      console.log(error)
+    })
+
+
+  }
 
   const registerForPushNotification = async () => {
     try {
@@ -196,7 +208,34 @@ export default function App({route, navigation}) {
                             >
                               <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
                             </TouchableOpacity>
-                          )
+                          ),
+                          headerRight: () => {
+                            if(route.params.isCheck === undefined && route.params.userInfo){
+                              api.isBookMark({memberId: route.params.userInfo.id, eventId: route.params.event.id}).then(res =>{
+                                navigation.navigate('EventDetail', {event: route.params.event, userInfo: route.params?.userInfo, isCheck: res.data.isBookmark})
+                              })
+                            }
+                            return (
+                              route.params.userInfo &&
+                              <TouchableOpacity
+                                style={{
+                                  borderRadius: 100,
+                                  backgroundColor: 'rgba(255,255,255,0.8)',
+                                  width: 30,
+                                  height: 30,
+                                  justifyContent: 'center',
+                                  alignItems: 'center'
+                                }}
+                                onPress={()=> {
+                                  api.stampBookMark({memberId:route.params.userInfo.id, eventId: route.params.event.id}).then(res => {
+                                    navigation.navigate('EventDetail', {event: route.params.event, userInfo: route.params.userInfo, isCheck: res.data.isBookmark})
+                                  })
+                                }}
+                              >
+                                <Ionicons name={route.params.isCheck ? 'ios-heart-sharp' : 'ios-heart-outline'} size={25} color={Colors.red}/>
+                              </TouchableOpacity>
+                            )
+                          }
                         })}
           />
           <Stack.Screen name={'EventReportList'} component={EventReportListScreen}

@@ -8,6 +8,7 @@ import {useFocusEffect} from "@react-navigation/native";
 import api from "../services/api/api";
 import {FlashList} from "@shopify/flash-list";
 import EventCards from "../components/eventCards";
+import Colors from "../constants/Colors";
 
 const FeedScreen = (props) => {
   const [isLoad, setIsLoad] = useState(true)
@@ -48,7 +49,10 @@ const FeedScreen = (props) => {
   }, [])
 
   return (
-    <View>
+    <View style={{
+      flex: 1,
+      backgroundColor: Colors.white
+    }}>
       {
         !isLoad &&
           <FlashList
@@ -60,7 +64,7 @@ const FeedScreen = (props) => {
             renderItem={({item}) => {
               return (
                 <EventCards event={item}
-                            onPress={() => props.navigation.navigate('EventDetail', {event: item})}/>
+                            onPress={() => props.navigation.navigate('EventDetail', {event: item, userInfo: userInfo ?? undefined})}/>
               )
             }}
             estimatedItemSize={320}

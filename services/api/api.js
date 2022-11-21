@@ -122,6 +122,14 @@ class api {
     })
   }
 
+  isBookMark(data){
+    return apis({
+      method: "post",
+      url: `members/isBookmark`,
+      data: data,
+    })
+  }
+
   stampBookMark(data){
     return apis({
       method: "post",
@@ -129,6 +137,7 @@ class api {
       data: data,
     })
   }
+
 
   getBookMark(memId){
     return apis({

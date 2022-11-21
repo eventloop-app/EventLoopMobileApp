@@ -103,22 +103,26 @@ const ProfileScreen = (props) => {
   }, [response])
 
   const getAzureToken = async (code, code_verifier) => {
-    const {accessToken, refreshToken, idToken} = await exchangeCodeAsync({
-      code: code,
-      clientId: '4bf4a100-9aeb-42be-8649-8fd4ef42722b',
-      redirectUri: makeRedirectUri({
-        scheme: 'eventloop',
-        path: 'azure'
-      }),
-      scopes: ["openid", "profile", "email", "offline_access"],
-      grant_type: "authorization_code",
-      extraParams: {
-        code_verifier: code_verifier
-      },
-    }, {
-      tokenEndpoint: 'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/oauth2/v2.0/token'
-    })
-    dispatch(SignIn(accessToken, refreshToken, idToken))
+    try {
+      const {accessToken, refreshToken, idToken} = await exchangeCodeAsync({
+        code: code,
+        clientId: '4bf4a100-9aeb-42be-8649-8fd4ef42722b',
+        redirectUri: makeRedirectUri({
+          scheme: 'eventloop',
+          path: 'azure'
+        }),
+        scopes: ["openid", "profile", "email", "offline_access"],
+        grant_type: "authorization_code",
+        extraParams: {
+          code_verifier: code_verifier
+        },
+      }, {
+        tokenEndpoint: 'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/oauth2/v2.0/token'
+      })
+      dispatch(SignIn(accessToken, refreshToken, idToken))
+    } catch (e) {
+      console.log(e)
+    }
   }
 
 
@@ -445,23 +449,6 @@ const ProfileScreen = (props) => {
           renderUserEventCard()
         }
       </View>
-
-      {/*<TouchableOpacity*/}
-      {/*  style={{*/}
-      {/*    marginTop: 30*/}
-      {/*  }}*/}
-      {/*  disabled={!request}*/}
-      {/*  onPress={() => {*/}
-      {/*    promptAsync();*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <Animated.Text style={{*/}
-      {/*    fontFamily: Fonts.bold,*/}
-      {/*    fontSize: fontSize.big,*/}
-      {/*    color: Colors.primary,*/}
-      {/*    transform: [{translateX: translation}]*/}
-      {/*  }}>เข้าสู่ระบบ</Animated.Text>*/}
-      {/*</TouchableOpacity>*/}
     </View>
   )
 
