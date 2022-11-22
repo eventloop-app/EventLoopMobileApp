@@ -13,11 +13,14 @@ import {MaterialIcons} from "@expo/vector-icons";
 const EventCards = ({event, onPress}) => {
   const [userJoin, setUserJoin] = useState(null)
   const [isLoad, setIsLoad] = useState(true)
+
   useEffect(() => {
-    // console.log(event)
     api.getRegMem({eventId: event.id}).then(res => {
       setUserJoin(res.data)
-      setIsLoad(false)
+      setTimeout(()=>{
+        setIsLoad(false)
+      },500)
+
     })
   }, [])
 
@@ -79,121 +82,122 @@ const EventCards = ({event, onPress}) => {
     return view
   }
   return (
-    <TouchableOpacity activeOpacity={1} onPress={onPress}>
-      <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: 290}}>
-        <View style={{
-          width: 210,
-          height: 280,
-          borderRadius: 15,
-          padding: 5,
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-          backgroundColor: Colors.white
-        }}>
+    !isLoad &&
+      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+        <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: 290}}>
           <View style={{
-            alignItems: 'center',
-            margin: 3,
+            width: 210,
+            height: 280,
             borderRadius: 15,
-            height: "50%",
-            overflow: 'hidden',
-            backgroundColor: Colors.gray
+            padding: 5,
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+            backgroundColor: Colors.white
           }}>
-            <Image
-              style={{
-                width: '100%',
-                height: '100%',
-              }}
-              source={{
-                uri: (event.coverImageUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
-              }}
-            />
-          </View>
-          <View style={{
-            margin: 3,
-          }}>
-            <Text
-              numberOfLines={1}
-              style={{
-                fontFamily: Fonts.bold,
-                fontSize: fontSize.primary,
-                color: Colors.black,
-              }}>
-              {event.eventName}
-            </Text>
             <View style={{
-              marginTop: 4,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
+              alignItems: 'center',
+              margin: 3,
+              borderRadius: 15,
+              height: "50%",
+              overflow: 'hidden',
+              backgroundColor: Colors.gray
             }}>
-              <Ionicons name={'calendar-sharp'} size={24} color={Colors.primary}/>
-              <Text style={{
-                fontFamily: Fonts.primary,
-                fontSize: fontSize.primary,
-                color: Colors.black,
-                textAlign: 'left',
-                marginLeft: 5
-              }}>{toBuddhistYear(moment(event?.startDate), "DD/MM/YYYY")}</Text>
+              <Image
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
+                source={{
+                  uri: (event.coverImageUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
+                }}
+              />
             </View>
             <View style={{
-              marginTop: 4,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
+              margin: 3,
             }}>
-              <Ionicons name={'ios-time-outline'} size={24} color={Colors.primary}/>
-              <Text style={{
-                fontFamily: Fonts.primary,
-                fontSize: fontSize.primary,
-                color: Colors.black,
-                textAlign: 'left',
-                marginLeft: 5
-              }}>{moment(event.startDate).format("HH:mm") + " - " + moment(event.endDate).format("HH:mm") + " น."}</Text>
-            </View>
-            {(!isLoad && userJoin.length > 0) &&
-              <View style={{
-                marginTop: 4,
-                position: 'relative',
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-              }}>
-                <Ionicons name={'person'} size={24} color={Colors.primary}/>
-                {
-                  renderPersonIcon()
-                }
-              </View>
-            }
-
-            {(!isLoad && userJoin?.length === 0) &&
-              <View style={{
-                marginTop: 4,
-                position: 'relative',
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-              }}>
-                <MaterialIcons name={'fiber-new'} size={24} color={Colors.primary}/>
-                <Text style={{
-                  marginLeft: 5,
-                  fontFamily: Fonts.primary,
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontFamily: Fonts.bold,
                   fontSize: fontSize.primary,
                   color: Colors.black,
                 }}>
-                  กิจกรรมใหม่
-                </Text>
+                {event.eventName}
+              </Text>
+              <View style={{
+                marginTop: 4,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}>
+                <Ionicons name={'calendar-sharp'} size={24} color={Colors.primary}/>
+                <Text style={{
+                  fontFamily: Fonts.primary,
+                  fontSize: fontSize.primary,
+                  color: Colors.black,
+                  textAlign: 'left',
+                  marginLeft: 5
+                }}>{toBuddhistYear(moment(event?.startDate), "DD/MM/YYYY")}</Text>
               </View>
-            }
+              <View style={{
+                marginTop: 4,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}>
+                <Ionicons name={'ios-time-outline'} size={24} color={Colors.primary}/>
+                <Text style={{
+                  fontFamily: Fonts.primary,
+                  fontSize: fontSize.primary,
+                  color: Colors.black,
+                  textAlign: 'left',
+                  marginLeft: 5
+                }}>{moment(event.startDate).format("HH:mm") + " - " + moment(event.endDate).format("HH:mm") + " น."}</Text>
+              </View>
+              {(userJoin?.length > 0) &&
+                <View style={{
+                  marginTop: 4,
+                  position: 'relative',
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}>
+                  <Ionicons name={'person'} size={24} color={Colors.primary}/>
+                  {
+                    renderPersonIcon()
+                  }
+                </View>
+              }
+
+              {(userJoin?.length === 0) &&
+                <View style={{
+                  marginTop: 4,
+                  position: 'relative',
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}>
+                  <MaterialIcons name={'fiber-new'} size={24} color={Colors.primary}/>
+                  <Text style={{
+                    marginLeft: 5,
+                    fontFamily: Fonts.primary,
+                    fontSize: fontSize.primary,
+                    color: Colors.black,
+                  }}>
+                    กิจกรรมใหม่
+                  </Text>
+                </View>
+              }
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
   );
 };
 

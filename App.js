@@ -30,7 +30,7 @@ import EditEventScreen from "./screens/EditEventScreen";
 import BookMarkListScreen from "./screens/BookMarkListScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
-import EventListForOrgScreen from "./screens/EventListForOrgScreen";
+import EventListForJoinScreen from "./screens/EventListForJoinScreen";
 import api from "./services/api/api";
 import MemberProfileScreen from "./screens/MemberProfileScreen";
 
@@ -364,7 +364,7 @@ export default function App({route, navigation}) {
                 }}
                 onPress={() => navigation.pop()}
               >
-                <Ionicons name="md-close" size={25} color={Colors.black}/>
+                <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
               </TouchableOpacity>
             )
           })}/>
@@ -400,7 +400,7 @@ export default function App({route, navigation}) {
             )
           })}/>
 
-          <Stack.Screen name={'EventListForOrg'} component={EventListForOrgScreen} options={({route, navigation}) => ({
+          <Stack.Screen name={'EventListForJoin'} component={EventListForJoinScreen} options={({route, navigation}) => ({
             headerShown: true,
             headerTransparent: true,
             tabBarShowLabel: false,

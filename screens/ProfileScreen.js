@@ -426,7 +426,7 @@ const ProfileScreen = (props) => {
                   </TouchableOpacity>
                   :
                   <TouchableOpacity
-                    onPress={() => signOut()}
+                    onPress={() => navigation.navigate('ManageEvent')}
                     style={{
                       width: '70%',
                       height: 50,

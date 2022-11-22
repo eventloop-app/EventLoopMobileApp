@@ -45,6 +45,7 @@ const EventDetailScreen = (props) => {
   const dispatch = useDispatch();
   const [keyboardStatus, setKeyboardStatus] = useState(undefined);
   const [isLoad, setIsLoad] = useState(true)
+  const [isError, setIsError] = useState(false)
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -75,6 +76,12 @@ const EventDetailScreen = (props) => {
       }else{
         navigation.navigate('Error')
       }
+    }, error => {
+      console.log(error)
+      setIsError(true)
+      setTimeout(()=>{
+        navigation.goBack()
+      },1000)
     })
   }, [])
 
@@ -138,6 +145,12 @@ const EventDetailScreen = (props) => {
         getIsCheckIn()
         getIsReview()
       }
+    },error => {
+      console.log(error)
+      setIsError(true)
+      setTimeout(()=>{
+        navigation.goBack()
+      },1000)
     })
   }
 
@@ -183,7 +196,11 @@ const EventDetailScreen = (props) => {
           setIsRegister(true)
         }
       }, error => {
-        console.warn(error)
+        console.log(error)
+        setIsError(true)
+        setTimeout(()=>{
+          navigation.goBack()
+        },1000)
       })
     }
   }
@@ -237,7 +254,6 @@ const EventDetailScreen = (props) => {
 
     </View>
   )
-
   const modelConfirm = () => (
     <View style={{
       position: 'absolute',
@@ -258,21 +274,32 @@ const EventDetailScreen = (props) => {
         // justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <Text style={{
-          marginTop: 50,
-          fontFamily: Fonts.bold,
-          fontSize: FontSize.medium
-        }}>{isRegister ? 'ยืนยันการยกเลิกเข้าร่วมกิจกรรม' : 'ยืนยันการเข้าร่วมกิจกรรม'}</Text>
+        {
+          isError ? <Text style={{
+            marginTop: 50,
+            fontFamily: Fonts.bold,
+            fontSize: FontSize.medium
+          }}>มีบางอย่างผิดพลาด</Text> : <Text style={{
+            marginTop: 50,
+            fontFamily: Fonts.bold,
+            fontSize: FontSize.medium
+          }}>{isRegister ? 'ยืนยันการยกเลิกเข้าร่วมกิจกรรม' : 'ยืนยันการเข้าร่วมกิจกรรม'}</Text>
+        }
+
       </View>
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={{position: 'relative', bottom: 50,margin: 10 }}
-                          onPress={() => setShowModelConfirm(!showModelConfirm)}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitRegisterEvent()}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
-        </TouchableOpacity>
-      </View>
+      {
+        !isError &&
+        <View style={{flexDirection: 'row'}}>
+          <TouchableOpacity style={{position: 'relative', bottom: 50,margin: 10 }}
+                            onPress={() => setShowModelConfirm(!showModelConfirm)}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.red}}>ยกเลิก</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{position: 'relative', bottom: 50, marginLeft: 30, marginTop: 10}} onPress={() => submitRegisterEvent()}>
+            <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.primary}}>ยืนยัน</Text>
+          </TouchableOpacity>
+        </View>
+      }
+
     </View>
   )
 
@@ -398,14 +425,14 @@ const EventDetailScreen = (props) => {
     switch (userInfo?.role) {
       case 'MEMBER':
         return (
-          ((moment().unix() * 1000) <= eventInfo?.startDate && userInfo?.id !== eventInfo?.organizerId) ?
+          (userInfo?.id !== eventInfo?.organizerId) ?
             <View>
-              <TouchableOpacity style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
+              <TouchableOpacity disabled={eventInfo?.numberOfRegister === eventInfo?.numberOfPeople} style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
                                 activeOpacity={0.8} onPress={() => setShowModelConfirm(true)}>
                 <View style={{
                   width: "89%",
                   height: 60,
-                  backgroundColor: isRegister ? Colors.orange : Colors.primary,
+                  backgroundColor: isRegister ? Colors.orange : (eventInfo?.numberOfRegister === eventInfo?.numberOfPeople ? Colors.gray2 : Colors.primary),
                   borderRadius: 12,
                   justifyContent: 'center',
                   alignItems: 'center'
@@ -702,6 +729,33 @@ const EventDetailScreen = (props) => {
                 </Text>
               </View>
             </View>
+
+            <View style={{flexDirection: 'row', alignItems: 'center', height: 50, marginLeft: 10, marginTop: 5}}>
+              <View style={{
+                width: 50,
+                height: 50,
+                borderRadius: 10,
+                backgroundColor: 'rgba(214, 234, 248, 0.5)',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <EventIcons source={'Ionicons'}
+                            name={'ios-person-sharp'}
+                            size={35}
+                            color={Colors.primary}/>
+              </View>
+              <View style={{height: 50, marginLeft: 10, justifyContent: 'center', width: "80%"}}>
+                <Text numberOfLines={1} style={{
+                  fontFamily: Fonts.bold,
+                  fontSize: FontSize.primary,
+                  color: (eventInfo?.numberOfRegister === eventInfo?.numberOfPeople ? Colors.red : Colors.black)
+                }}>
+                  {
+                    `${eventInfo?.numberOfRegister} / ${eventInfo?.numberOfPeople}`
+                  }
+                </Text>
+              </View>
+            </View>
             {
               ((eventInfo?.type === "ONSITE" && eventInfo?.location) &&
                 <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 10}}>
@@ -841,7 +895,7 @@ const EventDetailScreen = (props) => {
           justifyContent: 'center',
           alignItems: 'center'
         }}>
-          <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>กำลังโหลดข้อมูล</Text>
+          <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>{isError ? 'มีบางอย่างผิดพลาด': 'กำลังโหลดข้อมูล'}</Text>
         </View>
 
       </View>

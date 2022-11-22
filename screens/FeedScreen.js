@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {ScrollView, Text, View} from "react-native";
+import {FlatList, ScrollView, Text, View} from "react-native";
 import storages from "../services/storage/storages";
 import {useDispatch, useSelector} from "react-redux";
 import {Token} from "../actions/token";
@@ -55,12 +55,11 @@ const FeedScreen = (props) => {
     }}>
       {
         !isLoad &&
-          <FlashList
+          <FlatList
             horizontal={true}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             data={allEvent}
-            refreshing={false}
             renderItem={({item}) => {
               return (
                 <EventCards event={item}

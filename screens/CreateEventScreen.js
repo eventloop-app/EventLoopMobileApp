@@ -134,7 +134,7 @@ const CreateEventScreen = (props) => {
         </Text>
         <View style={{marginTop: 30}}>
           <RNDateTimePicker
-            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 5)).setHours(0, 0, 0, 0))}
+            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 0)).setHours(0, 0, 0, 0))}
             mode={dateStatus ? "time" : "datetime"}
             value={dateStatus ? new Date(eventData.endDate) : new Date(eventData.startDate)}
             style={{height: 100, fontFamily: Fonts.primary}}
@@ -216,7 +216,7 @@ const CreateEventScreen = (props) => {
                   defaultValue={eventData.eventName}
                   style={{fontFamily: Fonts.bold, fontSize: FontSize.large, height: 50}}
                   multiline={false}
-                  placeholder={"ใส่รายละเอียดกิจกรรม"}
+                  placeholder={"ใส่ชื่อกิจกรรม"}
                   placeholderTextColor={Colors.gray2}
                   onChangeText={(input) => setEventData({...eventData, eventName: input})}
                 />
@@ -273,7 +273,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginTop: 5,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเลือกอย่างน้อย 1 แท็ก
                 </Text>
@@ -398,7 +398,7 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องมีผู้เข้าร่วมอย่างน้อย 2 คน
               </Text>
@@ -448,7 +448,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginLeft: 10,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเป็นลิงค์ในการเข้าร่วมกิจกรรมเท่านั้น
                 </Text>
@@ -473,7 +473,7 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องระบุรายกิจกรรมอย่างน้อย 20 ตัวอักษร
               </Text>
