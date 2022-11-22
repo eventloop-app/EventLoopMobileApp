@@ -31,6 +31,8 @@ import BookMarkListScreen from "./screens/BookMarkListScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
 import EventListForOrgScreen from "./screens/EventListForOrgScreen";
+import api from "./services/api/api";
+import MemberProfileScreen from "./screens/MemberProfileScreen";
 
 moment().locale('th')
 
@@ -62,8 +64,9 @@ export default function App({route, navigation}) {
 
   useEffect(() => {
     registerForPushNotification().then(async token => {
-      console.log(token)
-      await setToken(token)
+      if(token !== undefined){
+        await setToken(token)
+      }
       await setIsLoad(false)
     }).catch(e => {
       console.warn(e)
@@ -84,12 +87,17 @@ export default function App({route, navigation}) {
   }, [])
 
   const registerForPushNotification = async () => {
-    const {status} = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permission to access location was denied');
-      return;
-    } else {
-      return (await Notifications.getExpoPushTokenAsync()).data
+    try {
+      const {status} = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        return;
+      } else {
+        return (await Notifications.getExpoPushTokenAsync()).data
+      }
+    }catch (e) {
+      setToken('NOT TOKEN')
+      console.log(`Can't get expo token`)
     }
   }
 
@@ -190,7 +198,34 @@ export default function App({route, navigation}) {
                             >
                               <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
                             </TouchableOpacity>
-                          )
+                          ),
+                          headerRight: () => {
+                            if(route.params.isCheck === undefined && route.params.userInfo){
+                              api.isBookMark({memberId: route.params.userInfo.id, eventId: route.params.event.id}).then(res =>{
+                                navigation.navigate('EventDetail', {event: route.params.event, userInfo: route.params?.userInfo, isCheck: res.data.isBookmark})
+                              })
+                            }
+                            return (
+                              route.params.userInfo &&
+                              <TouchableOpacity
+                                style={{
+                                  borderRadius: 100,
+                                  backgroundColor: 'rgba(255,255,255,0.8)',
+                                  width: 30,
+                                  height: 30,
+                                  justifyContent: 'center',
+                                  alignItems: 'center'
+                                }}
+                                onPress={()=> {
+                                  api.stampBookMark({memberId:route.params.userInfo.id, eventId: route.params.event.id}).then(res => {
+                                    navigation.navigate('EventDetail', {event: route.params.event, userInfo: route.params.userInfo, isCheck: res.data.isBookmark})
+                                  })
+                                }}
+                              >
+                                <Ionicons name={route.params.isCheck ? 'ios-heart-sharp' : 'ios-heart-outline'} size={25} color={Colors.red}/>
+                              </TouchableOpacity>
+                            )
+                          }
                         })}
           />
           <Stack.Screen name={'EventReportList'} component={EventReportListScreen}
@@ -240,7 +275,7 @@ export default function App({route, navigation}) {
           />
 
           <Stack.Screen name={'EventList'} component={EventListScreen}
-                        options={{
+                        options={({route, navigation}) => ({
                           headerShown: true,
                           headerTransparent: true,
                           tabBarShowLabel: false,
@@ -251,8 +286,23 @@ export default function App({route, navigation}) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'เดียวมาตั้ง',
-                        }}
+                          title: 'รายการกิจกรมม',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
           />
 
           <Stack.Screen name={'EditEvent'} component={EditEventScreen}
@@ -397,6 +447,37 @@ export default function App({route, navigation}) {
               title: "เลือกสถานที่",
               headerTintColor: Colors.white,
               headerBackTitle: '',
+              headerLeft: () => (
+                <TouchableOpacity
+                  style={{
+                    borderRadius: 100,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    width: 30,
+                    height: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  onPress={() => navigation.pop()}
+                >
+                  <Ionicons name="md-close" size={25} color={Colors.black}/>
+                </TouchableOpacity>
+              )
+            })}/>
+
+            <Stack.Screen name={'MemberProfile'} component={MemberProfileScreen} options={({route, navigation}) => ({
+              headerShown: true,
+              headerTransparent: true,
+              tabBarShowLabel: false,
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: Fonts.bold,
+                fontSize: fontSize.medium,
+                color: Colors.black,
+              },
+              title: "",
+              headerTintColor: Colors.white,
+              headerBackTitle: '',
+              headerBackVisible: false,
               headerLeft: () => (
                 <TouchableOpacity
                   style={{

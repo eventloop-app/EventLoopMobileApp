@@ -1,19 +1,6 @@
 {
   "expo": {
     "scheme": "eventloop",
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": ".assets/icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./local/assets/notification-sound.wav",
-            "./local/assets/notification-sound-other.wav"
-          ]
-        }
-      ]
-    ],
     "name": "EventLoop",
     "slug": "EventLoopV3",
     "version": "1.0.0",
@@ -32,16 +19,20 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.eventloop.EventLoopV3"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.eventloop.EventLoopV3"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "extra": {
+      "eas": {
+        "projectId": "5c0e6539-2008-47ee-a141-4060612bed65"
+      }
     }
   }
 }

@@ -122,6 +122,14 @@ class api {
     })
   }
 
+  isBookMark(data){
+    return apis({
+      method: "post",
+      url: `members/isBookmark`,
+      data: data,
+    })
+  }
+
   stampBookMark(data){
     return apis({
       method: "post",
@@ -129,6 +137,7 @@ class api {
       data: data,
     })
   }
+
 
   getBookMark(memId){
     return apis({
@@ -232,6 +241,50 @@ class api {
       data: data
     })
   }
+
+  getEventBySearch(keyword){
+    return apis({
+      method: "get",
+      url: `events/getEventByKeyword?keyword=${keyword}&pageSize=100`,
+    })
+  }
+
+  getEventAttention(){
+    return apis({
+      method: "get",
+      url: `events/attention?pageSize=100`,
+    })
+  }
+
+  getEventByRang(lat, lng){
+    return apis({
+      method: "get",
+      url: `events/range?&pageSize=100&latitude=${lat}&longitude=${lng}&range=10`,
+    })
+  }
+
+  getEventByTag(selectTag){
+    console.log(selectTag)
+    const tags = selectTag?.map((item) => `&tags=${item}`).join('')
+    return apis({
+      method: "get",
+      url: `events/getEventByTag?pageSize=100${tags}`,
+    })
+  }
+
+  followMember(data){
+    return apis({
+      method: "post",
+      url: `/members/follow`,
+      data: data
+    })
+  }
+
+
+
+
+
+
 
 
 

@@ -7,7 +7,7 @@ import {createRef, useEffect, useState} from "react";
 import fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
 import Colors from "../constants/Colors";
-import Mapin from  "../../EventLoopV3/assets/images/pin.png"
+import Mapin from  "../assets/images/pin.png"
 
 const MapScreen = (props) => {
 

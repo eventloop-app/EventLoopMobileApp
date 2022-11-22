@@ -1,18 +1,17 @@
-import {SAVE_TOKEN_SUCCESS} from "../actions/types";
-import storages from "../services/storage/storages";
+import {GET_TOKEN, SAVE_TOKEN_SUCCESS} from "../actions/types";
 
 const initialState = {
-  token: null,
+    token: []
 };
 
 export default function token(state = initialState, action) {
-  const {type, payload} = action;
-  switch (type) {
-    case SAVE_TOKEN_SUCCESS:
-      return {...state, token: payload};
-    default:
-      return storages.getData('Token').then(res => {
-        return res
-      })
-  }
+    const {type, payload} = action;
+    switch (type) {
+        case SAVE_TOKEN_SUCCESS:
+            return {...state, token: payload};
+        case GET_TOKEN:
+            return {...state, token: action.payload};
+        default:
+            return state
+    }
 }

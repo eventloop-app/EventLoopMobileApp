@@ -47,11 +47,29 @@ const EventReportScreen = (props) => {
     }
     api.suspendEvent(data).then(res => {
       console.log(res.status)
-      if(res.status === 200){
+      if (res.status === 200) {
         getReports()
       }
     })
   }
+
+  const closeEvent = () => {
+    let data = {
+      eventId: eventInfo?.id,
+      adminId: props.route.params.memId,
+      status: "SHUTDOWN",
+      type: "กิจกรรมมีเนื้อหาเข้าค่ายมั่วสุ่ม",
+      remark: ""
+    }
+    api.suspendEvent(data).then(res => {
+      console.log(res.status)
+      if (res.status === 200) {
+        getReports()
+        props.navigation.pop()
+      }
+    })
+  }
+
 
   const unSuspendEvent = () => {
     let data = {
@@ -63,7 +81,7 @@ const EventReportScreen = (props) => {
     }
     api.suspendEvent(data).then(res => {
       console.log(res.status)
-      if(res.status === 200){
+      if (res.status === 200) {
         console.log(res)
         props.navigation.pop()
       }
@@ -167,7 +185,7 @@ const EventReportScreen = (props) => {
           <TouchableOpacity
             disabled={!(eventInfo?.updateAt > eventInfo?.createAt)}
             style={{margin: 5, justifyContent: 'center', alignItems: 'center'}}
-            onPress={() => console.log('asdasdsdasd')}>
+            onPress={() => colseEvent()}>
             <View style={{
               width: 180,
               height: 50,
@@ -218,7 +236,7 @@ const EventReportScreen = (props) => {
 
           <TouchableOpacity disabled={!(reports?.filter(rp => rp.isReview === true).length > reports?.length / 2)}
                             style={{margin: 5, justifyContent: 'center', alignItems: 'center'}}
-                            onPress={() => console.log('asdasdsdasd')}>
+                            onPress={() => closeEvent()}>
             <View style={{
               width: 180,
               height: 50,

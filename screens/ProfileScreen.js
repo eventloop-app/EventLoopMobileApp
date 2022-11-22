@@ -1,23 +1,81 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Image, Platform, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {
+  Animated,
+  Button,
+  Image,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import * as WebBrowser from 'expo-web-browser';
 import {exchangeCodeAsync, makeRedirectUri, useAuthRequest, useAutoDiscovery} from 'expo-auth-session';
 import {useDispatch, useSelector} from "react-redux";
-import {SignIn, SignOut} from "../actions/auth";
-import storages from "../services/storage/storages";
+import {getUserInfo, RegisterSuccess, SignIn, SignOut} from "../actions/auth";
 import api from "../services/api/api";
 import Colors from "../constants/Colors";
-import profileImageMock from "../assets/images/profileImage.jpg";
 import fontSize from "../constants/FontSize";
 import Fonts from "../constants/Fonts";
-import FontSize from "../constants/FontSize";
+import {useFocusEffect, useNavigation} from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import EventIcons from "../components/eventIcons";
 
 WebBrowser.maybeCompleteAuthSession();
 const ProfileScreen = (props) => {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
-  const {authData} = useSelector(state => state.auth)
+  const {authInfo} = useSelector(state => state.auth)
   const {userInfo} = useSelector(state => state.auth)
-  const [userData, setUserData] = useState(null)
+  const [showModel, setShowModel] = useState(false)
+  const translation = useRef(new Animated.Value(450)).current;
+  const [isLogin, setIsLogin] = useState(false)
+
+
+  useFocusEffect(
+    useCallback(() => {
+      // Animated.timing(translation, {
+      //     toValue: 0,
+      //     delay: 100,
+      //     useNativeDriver: true,
+      // }).start();
+      return () => {
+        console.log('Unmount')
+        translation.setValue(450)
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    console.log('getUserInfo')
+    console.log(userInfo)
+    if (authInfo === null && userInfo === null) {
+      dispatch(getUserInfo())
+    } else {
+      setIsLogin(true)
+    }
+  }, [userInfo])
+
+  useEffect(() => {
+    if (authInfo !== null || authInfo != undefined) {
+      api.checkUserEmail(authInfo.email).then(res => {
+        if (res.status === 200) {
+          if (!res.data.hasEmail) {
+            navigation.navigate('SetupProfile')
+          } else {
+            api.getUserDataById(authInfo.memberId).then(res => {
+              if (res.status === 200) {
+                setIsLogin(true)
+                dispatch(RegisterSuccess(res.data))
+              }
+            })
+          }
+        }
+      })
+    }
+  }, [authInfo])
 
   const discovery = useAutoDiscovery(
     'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/v2.0'
@@ -30,359 +88,447 @@ const ProfileScreen = (props) => {
       scopes: ['openid', 'profile', 'email', 'offline_access'],
       responseType: "code",
       redirectUri: makeRedirectUri({
-        scheme: 'eventloop'
+        scheme: 'eventloop',
+        path: 'azure'
       }),
     },
     discovery
   );
 
-  useEffect(() => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          console.log(user.data.role)
-          setUserData(user.data)
-        }
-      }).catch(error => {
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
-  }, [])
 
   useEffect(() => {
-    if (userInfo !== null && userInfo !== undefined) {
-      if (userInfo['_3'] !== undefined && userInfo['_3'] !== null) {
-        setUserData(JSON.parse(userInfo['_3']))
-      } else if (userInfo.id !== undefined) {
-        setUserData(userInfo)
-      }
-    }
-  }, [userInfo])
-
-
-  useEffect(() => {
-    if (authData) {
-      api.checkUserEmail(authData.email).then(res => {
-        if (!res.data.hasEmail) {
-          props.navigation.navigate('SetupProfile')
-        } else {
-          storages.getUserData().then(res => {
-            api.getUserDataById(res.memberId).then(user => {
-              setUserData(user.data)
-            })
-          })
-        }
-      }).catch(error => {
-        console.warn("CheckEmail: " + error)
-      })
-    }
-  }, [authData])
-
-
-  useEffect(() => {
-    if (response !== null && response?.type !== "dismiss" && response?.type !== "cancel" && authData === null) {
+    if (response !== null && response?.type !== "dismiss" && response?.type !== "cancel" && authInfo === null) {
       getAzureToken(response.params.code, request.codeVerifier)
     }
   }, [response])
 
   const getAzureToken = async (code, code_verifier) => {
-    const {accessToken, refreshToken, idToken} = await exchangeCodeAsync({
-      code: code,
-      clientId: '4bf4a100-9aeb-42be-8649-8fd4ef42722b',
-      redirectUri: makeRedirectUri({scheme: ''}),
-      scopes: ["openid", "profile", "email", "offline_access"],
-      grant_type: "authorization_code",
-      extraParams: {
-        code_verifier: code_verifier
-      },
-    }, {
-      tokenEndpoint: 'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/oauth2/v2.0/token'
-    })
-    dispatch(SignIn(accessToken, refreshToken, idToken))
+    try {
+      const {accessToken, refreshToken, idToken} = await exchangeCodeAsync({
+        code: code,
+        clientId: '4bf4a100-9aeb-42be-8649-8fd4ef42722b',
+        redirectUri: makeRedirectUri({
+          scheme: 'eventloop',
+          path: 'azure'
+        }),
+        scopes: ["openid", "profile", "email", "offline_access"],
+        grant_type: "authorization_code",
+        extraParams: {
+          code_verifier: code_verifier
+        },
+      }, {
+        tokenEndpoint: 'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/oauth2/v2.0/token'
+      })
+      dispatch(SignIn(accessToken, refreshToken, idToken))
+    } catch (e) {
+      console.log(e)
+    }
   }
 
 
   const signOut = () => {
-    dispatch(SignOut())
-    storages.remove('userToken')
-    storages.remove('Token')
-    storages.remove('userInfo')
-    setUserData(null)
-    props.navigation.navigate("Profile")
+    onShowModel()
+    setTimeout(() => {
+      dispatch(SignOut())
+      setIsLogin(false)
+    }, 1000)
+    // setUserData(null)
   }
 
-  const renderHasUser = () => (
-    <ScrollView
-      contentContainerStyle={{paddingBottom: 220}}
-      showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}
-      style={{
-        flex: 1,
-        paddingTop: Platform.OS === 'ios' ? 50 : 35,
-        backgroundColor: Colors.white
-      }}>
-      <View style={{flex: 1, }}>
-        <View style={{position: 'relative', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center'}}>
-          <Image
-            source={userData?.profileUrl ? {uri: userData?.profileUrl} : profileImageMock}
-            style={{
-              width: 200,
-              height: 200,
-              borderRadius: 200 / 2,
-              borderWidth: 4,
-              borderColor: userData?.role === 'MEMBER' ? Colors.primary : Colors.red
-            }}
-          />
-        </View>
-        <View style={{alignItems: "center", marginTop: 10}}>
-          <View style={{flexDirection: "row"}}>
-            <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.large}}>{userData?.username}</Text>
-          </View>
-          {
-            userData?.role === "MEMBER" &&
-            <View style={{flexDirection: "row", marginTop: 4}}>
-              <View style={{alignItems: "center", width: 100}}>
-                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>กำลังติดตาม</Text>
-                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
-              </View>
-              <View style={{marginLeft: 11, marginRight: 0, borderColor: "black", borderWidth: 1}}></View>
-              <View style={{alignItems: "center", width: 100}}>
-                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>ผู้ติดตาม</Text>
-                <Text style={{fontFamily: Fonts.primary, fontSize: fontSize.primary}}>xxx</Text>
-              </View>
-            </View>
-          }
-        </View>
+  const onShowModel = async () => {
+    if (showModel === true) {
+      await Animated.timing(translation, {
+        toValue: 450,
+        delay: 100,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+      setTimeout(() => {
+        setShowModel(false)
+      }, 300)
+    } else {
+      setShowModel(true)
+      Animated.timing(translation, {
+        toValue: 0,
+        delay: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }
 
-        {
-          userData?.role === "MEMBER" &&
-          <View style={{padding: 20}}>
-            <Text style={{
-              fontFamily: Fonts.bold,
-              fontSize: FontSize.medium,
-            }}>เกี่ยวกับฉัน</Text>
-            <Text style={{
-              display: "flex",
-              marginTop: 5,
-              color: userData?.description ? Colors.black : "gray2",
-              fontFamily: Fonts.primary,
-              fontSize: FontSize.small,
-            }}>
-              {userData?.description ? userData?.description.trim() : "คุณยังไม่ได้เพิ่มคำอธิบาย"}
-            </Text>
-          </View>
-        }
-
-        {
-          userData?.role === "MEMBER" &&
-          <View style={{padding: 20}}>
-            <Text style={{
-              fontFamily: Fonts.bold,
-              fontSize: FontSize.medium,
-            }}>
-              กิจกรรมที่ฉันสนใจ
-            </Text>
-            <View style={{width: "100%", flexDirection: "row", flexWrap: "wrap",}}>
-              {userData?.tags.map((item, index) => {
-                return (
-                  <View key={index} style={{
-                    flexDirection: "row",
-                    backgroundColor: Colors.primary,
-                    borderRadius: 8,
-                    padding: 4,
-                    paddingHorizontal: 8,
-                    marginHorizontal: 2,
-                    margin: 5
-                  }}>
-                    <Text style={{
-                      fontFamily: Fonts.primary,
-                      fontSize: FontSize.small,
-                      color: Colors.white
-                    }}>{item}
-                    </Text>
-                  </View>
-                )
-              })}
-            </View>
-
-            <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 50}}>
-
-              <TouchableOpacity activeOpacity={0.8} onPress={() => props.navigation.navigate('EventListForOrg')}>
-                <View style={{
-                  backgroundColor: Colors.primary,
-                  width:  Platform.OS === 'ios'?  350 : 390,
-                  padding: 10,
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                  <Text style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: fontSize.primary,
-                    color: Colors.white
-                  }}>กิจกรรมที่คุณเข้าร่วม</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => props.navigation.navigate('ManageEvent')}>
-                <View style={{
-                  backgroundColor: Colors.primary,
-                  width:  Platform.OS === 'ios'?  350 : 390,
-                  padding: 10,
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                  <Text style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: fontSize.primary,
-                    color: Colors.white
-                  }}>จัดการกิจกรรมของคุณ</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => signOut()}>
-                <View style={{
-                  backgroundColor: Colors.red,
-                  width:  Platform.OS === 'ios'?  350 : 390,
-                  padding: 10,
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                  <Text style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: fontSize.primary,
-                    color: Colors.white
-                  }}>ออกจากระบบ</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        }
-
-        {
-          userData?.role === "ADMIN" &&
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <TouchableOpacity activeOpacity={0.8} onPress={() => props.navigation.navigate('EventReportList')}>
-              <View style={{
-                width: Platform.OS === "ios" ? 340 : 350,
-                height: 45,
-                backgroundColor: Colors.primary,
-                borderRadius: 12,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginBottom: 20
-              }}>
-                <Text style={{
-                  fontFamily: Fonts.bold,
-                  fontSize: fontSize.primary,
-                  color: Colors.white
-                }}>รายการอีเวนท์ที่ถูกรายงาน</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{marginTop: 15}} activeOpacity={0.8} onPress={() => signOut()}>
-              <View style={{
-                backgroundColor: Colors.red,
-                width:  Platform.OS === 'ios'?  350 : 390,
-                padding: 10,
-                borderRadius: 10,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <Text style={{
-                  fontFamily: Fonts.bold,
-                  fontSize: fontSize.primary,
-                  color: Colors.white
-                }}>ออกจากระบบ</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        }
-      </View>
-    </ScrollView>
-  )
-
-  const renderNotUser = () => (
+  const renderModel = () => (
     <View style={{
+      flex: 1,
       position: 'absolute',
-      top: 0,
+      backgroundColor: 'rgba(0,0,0,0.25)',
       left: 0,
       right: 0,
       bottom: 0,
-      justifyContent: 'center',
-      alignItems: 'center'
+      top: 0,
+      zIndex: 50
     }}>
+      <View style={{
+        position: 'absolute',
+        flex: 1,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}>
+        <Animated.View style={{
+          flex: 1,
+          height: 450,
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+          backgroundColor: Colors.white,
+          overflow: 'hidden',
+          transform: [{translateY: translation}]
+        }}>
 
-      <Text style={{
-        fontFamily: Fonts.bold,
-        fontSize: fontSize.big,
-        color: Colors.black
-      }}>คุณยังไม่ได้เข้าสู่ระบบ</Text>
+          <View style={{flex: 1, padding: 10}}>
+            <TouchableOpacity>
+              <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: 20, marginTop: 20}}>
+                <EventIcons source={'MaterialCommunityIcons'} name="account-edit" size={30} color={Colors.black}/>
+                <Text style={{
+                  marginLeft: 15,
+                  fontFamily: Fonts.primary,
+                  fontSize: fontSize.primary,
+                  color: Colors.black
+                }}>แก้ไขโปรไฟล์</Text>
+              </View>
+            </TouchableOpacity>
 
-      <Text style={{
-        fontFamily: Fonts.bold,
-        fontSize: fontSize.primary,
-        color: Colors.yellow
-      }}>คุณอาจใช้งานแอพพลิเคชั่นได้ไม่สมบูรณ์</Text>
+            <TouchableOpacity onPress={() => signOut()}>
+              <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: 20, marginTop: 20}}>
+                <EventIcons source={'Ionicons'} name="ios-enter" size={30} color={Colors.black}/>
+                <Text style={{
+                  marginLeft: 15,
+                  fontFamily: Fonts.primary,
+                  fontSize: fontSize.primary,
+                  color: Colors.black
+                }}>ออกจากระบบ</Text>
+              </View>
+            </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{
-          marginTop: 30
-        }}
-        disabled={!request}
-        onPress={() => {
-          promptAsync();
-        }}
-      >
-        <Text style={{
-          fontFamily: Fonts.bold,
-          fontSize: fontSize.big,
-          color: Colors.primary
-        }}>เข้าสู่ระบบ</Text>
-      </TouchableOpacity>
+            <TouchableOpacity style={{
+              position: 'relative',
+              height: 30,
+              bottom: 0,
+              right: 0,
+              left: 0,
+              top: 270,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }} activeOpacity={1} onPress={() => onShowModel()}>
+              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                <Text style={{
+                  textAlign: 'center',
+                  fontFamily: Fonts.bold,
+                  fontSize: fontSize.primary,
+                  color: Colors.black
+                }}>ปิดหน้าต่าง</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
 
-      {/*<TouchableOpacity*/}
-      {/*  style={{*/}
-      {/*    marginTop: 30*/}
-      {/*  }}*/}
-      {/*  disabled={!request}*/}
-      {/*  onPress={() => {*/}
-      {/*    props.navigation.navigate('Scanner')*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <Text style={{*/}
-      {/*    fontFamily: Fonts.bold,*/}
-      {/*    fontSize: fontSize.big,*/}
-      {/*    color: Colors.primary*/}
-      {/*  }}>Scanner</Text>*/}
-      {/*</TouchableOpacity>*/}
-
-
+        </Animated.View>
+      </View>
     </View>
   )
 
+  const renderUserInfoCard = () => (
+    <View style={{flex: 1, justifyContent: 'center'}}>
+      {
+        showModel && renderModel()
+      }
+      {
+        userInfo !== null &&
+        <View style={{
+          position: 'absolute',
+          alignItems: 'flex-end',
+          top: Platform.OS === 'ios' ? 60 : 50,
+          left: 0,
+          right: 10,
+          bottom: 0,
+        }}>
+          <TouchableOpacity activeOpacity={1} onPress={() => onShowModel()} style={{
+            width: 35,
+            height: 35,
+            backgroundColor: 'rgba(0,0,0,0.1)',
+            borderRadius: 100,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Ionicons name="menu" size={25} color={Colors.white}/>
+          </TouchableOpacity>
+        </View>
+      }
+      <View style={{
+        position: 'relative',
+        left: 0,
+        right: 0,
+        top: Platform.OS === 'ios' ? 44 : 0,
+        bottom: 0,
+        alignItems: 'center'
+      }}>
+        <View style={{position: 'absolute', top: -60, zIndex: 10}}>
+          <Animated.View style={{
+            width: 120,
+            height: 120,
+            borderWidth: 6,
+            borderColor: Colors.white,
+            borderRadius: 100,
+            overflow: 'hidden'
+          }}>
+            <Image
+              style={{width: "100%", height: "100%", resizeMode: 'cover',}}
+              source={{uri: userInfo?.profileUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1037860726301282334/user.png'}}
+            />
+          </Animated.View>
+        </View>
+        <Animated.View
+          style={{
+            width: '95%',
+            height: 300,
+            backgroundColor: Colors.white,
+            borderRadius: 25,
+          }}>
+          <View style={{flex: 1, marginTop: 60, alignItems: 'center'}}>
+            <View style={{
+              flex: 0.5,
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{
+                fontFamily: Fonts.bold,
+                fontSize: fontSize.medium,
+                color: Colors.black
+              }}>
+                {
+                  userInfo?.username ?? "ผู้เยียมชม"}
+
+              </Text>
+            </View>
+
+            {userInfo === null ?
+              <View style={{flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={{
+                  fontFamily: Fonts.primary, fontSize: fontSize.primary, textAlign: 'center'
+                }}>
+                  {`คุณยังไม่ได้เข้าสู่ระบบ\nเข้าสู่ระบบเพื่อใช้งานแอพพลิเคชั่นได้สมบูรณ์`}
+                </Text>
+              </View>
+              :
+              <View style={{
+                flex: 1,
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <View style={{flex: 1, flexDirection: 'row', marginBottom: 10}}>
+                  <View style={{
+                    flex: 1,
+                    width: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                      <Text style={{
+                        fontFamily: Fonts.bold,
+                        fontSize: fontSize.primary,
+                        color: Colors.black
+                      }}>
+                        100
+                      </Text>
+                      <Text style={{
+                        fontFamily: Fonts.bold,
+                        fontSize: fontSize.small,
+                        color: Colors.gray2
+                      }}>
+                        ผู้ติดตาม
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{
+                    flex: 1,
+                    width: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                      <Text style={{
+                        fontFamily: Fonts.bold,
+                        fontSize: fontSize.primary,
+                        color: Colors.black
+                      }}>
+                        100
+                      </Text>
+                      <Text style={{
+                        fontFamily: Fonts.bold,
+                        fontSize: fontSize.small,
+                        color: Colors.gray2
+                      }}>
+                        กำลังติดตาม
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            }
+            {
+              userInfo &&
+              <View style={{
+                flex: 0.6,
+                width: '80%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 10
+              }}>
+                <Text multiline={true}
+                      numberOfLines={2}
+                      style={{
+                        fontFamily: Fonts.primary,
+                        fontSize: fontSize.small,
+                        color: Colors.black
+                      }}>
+                  {
+                    userInfo?.description ?? 'ยังไม่เพิ่มคำบรรยายของคุณ'
+                  }
+                </Text>
+              </View>
+            }
+
+            <View style={{
+              flex: 1,
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 10
+            }}>
+              {
+                userInfo === null ?
+                  <TouchableOpacity
+                    onPress={() => promptAsync()}
+                    style={{
+                      width: '70%',
+                      height: 50,
+                      backgroundColor: Colors.primary,
+                      borderRadius: 50,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: fontSize.primary,
+                      color: Colors.white
+                    }}>เข้าสู่ระบบ</Text>
+                  </TouchableOpacity>
+                  :
+                  <TouchableOpacity
+                    onPress={() => signOut()}
+                    style={{
+                      width: '70%',
+                      height: 50,
+                      backgroundColor: Colors.primary,
+                      borderRadius: 50,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: fontSize.primary,
+                      color: Colors.white
+                    }}>จัดการกิจกรรม</Text>
+                  </TouchableOpacity>
+              }
+            </View>
+          </View>
+        </Animated.View>
+        {userInfo !== null &&
+          renderUserEventCard()
+        }
+      </View>
+    </View>
+  )
+
+  const renderUserEventCard = () => (
+    <View style={{
+      width: '100%',
+      position: 'relative',
+      left: 0,
+      right: 0,
+      top: 10,
+      bottom: 0,
+      alignItems: 'center',
+    }}>
+      <View
+        style={{
+          width: '95%',
+          height: 300,
+          backgroundColor: Colors.white,
+          borderRadius: 25,
+        }}>
+        <View style={{flex: 1, marginTop: 10}}>
+          <View style={{padding: 10}}>
+            <Text style={{
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.primary,
+              color: Colors.black
+            }}>
+              กิจกรรมที่คุณเข้าร่วม
+            </Text>
+          </View>
+          <View style={{flex: 1, justifyContent: 'center'}}>
+            <ScrollView
+              contentContainerStyle={{paddingRight: 10}}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              style={{flex: 1, flexDirection: 'row',}}
+              horizontal={true}>
+              <View style={{
+                width: 180,
+                height: '90%',
+                borderRadius: 15,
+                backgroundColor: 'pink',
+                marginLeft: 10
+              }}>
+
+              </View>
+              <View style={{
+                width: 180,
+                height: '90%',
+                borderRadius: 15,
+                backgroundColor: 'pink',
+                marginLeft: 10
+              }}>
+
+              </View>
+              <View style={{
+                width: 180,
+                height: '90%',
+                borderRadius: 15,
+                backgroundColor: 'pink',
+                marginLeft: 10
+              }}>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </View>
+    </View>
+  )
 
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: userData?.role === 'MEMBER' ? Colors.white : userData?.role === undefined ? Colors.white : Colors.gray2
-    }}>
-      {userData ? renderHasUser() : renderNotUser()}
-      {/*<TouchableOpacity*/}
-      {/*  disabled={!request}*/}
-      {/*  onPress={() => {*/}
-      {/*    promptAsync();*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <Text>Login</Text>*/}
-      {/*</TouchableOpacity>*/}
-
-      {/*<TouchableOpacity onPress={()=> logOut()}>*/}
-      {/*  <Text>Logout</Text>*/}
-      {/*</TouchableOpacity>*/}
+    <View style={{flex: 1, backgroundColor: Colors.background,}}>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle={"light-content"}
+      />
+      {
+        renderUserInfoCard()
+      }
     </View>
   );
 };

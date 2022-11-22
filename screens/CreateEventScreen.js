@@ -134,7 +134,7 @@ const CreateEventScreen = (props) => {
         </Text>
         <View style={{marginTop: 30}}>
           <RNDateTimePicker
-            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 0)).setHours(0, 0, 0, 0))}
+            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 5)).setHours(0, 0, 0, 0))}
             mode={dateStatus ? "time" : "datetime"}
             value={dateStatus ? new Date(eventData.endDate) : new Date(eventData.startDate)}
             style={{height: 100, fontFamily: Fonts.primary}}

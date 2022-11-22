@@ -17,15 +17,19 @@ const BookMarkListScreen = (props) => {
   const [eventInfo, setEventinfo] = useState(null)
   const [bookMark, setBookMark] = useState(null)
 
-  useEffect(() => {
-    const unsubscribe = props.navigation.addListener('focus', () => {
 
-      checkHasUser()
-
-    });
-
-    return unsubscribe;
-  }, [props.navigation]);
+  // useEffect(() => {
+  //   const unsubscribe = props.navigation.addListener('focus', () => {
+  //     console.log('subscribe')
+  //     checkHasUser()
+  //
+  //   });
+  //
+  //   return () =>{
+  //     console.log('unsubscribe')
+  //     return unsubscribe
+  //   };
+  // }, [props.navigation]);
 
   useEffect(() => {
     checkHasUser()
@@ -40,8 +44,7 @@ const BookMarkListScreen = (props) => {
         }
       }).catch(error => {
         setUserData(null)
-        console.log("GET USER")
-        console.log(error)
+
       })
     })
   }
