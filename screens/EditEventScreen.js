@@ -39,7 +39,6 @@ const CreateEventScreen = (props) => {
   const [coverImage, setCoverImage] = useState(null)
 
   useEffect(() => {
-
     const unsubscribe = props.navigation.addListener('focus', () => {
       if (props.route.params?.map !== undefined && props.route.params?.map !== null) {
         setEventData({...eventData, location: null})
@@ -54,7 +53,6 @@ const CreateEventScreen = (props) => {
       } else if (props.route.params?.eveId !== undefined && props.route.params?.eveId !== null) {
         console.log('GetEvent')
         api.getEventById(props.route.params?.eveId).then(res => {
-
           setEventData({
             eventId: res.data.id,
             eventName: res.data.eventName,
@@ -300,7 +298,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginTop: 5,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเลือกอย่างน้อย 1 แท็ก
                 </Text>
@@ -424,7 +422,7 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องมีผู้เข้าร่วมอย่างน้อย 2 คน
               </Text>
@@ -474,7 +472,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginLeft: 10,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเป็นลิงค์ในการเข้าร่วมกิจกรรมเท่านั้น
                 </Text>
@@ -499,12 +497,11 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องระบุรายกิจกรรมอย่างน้อย 20 ตัวอักษร
               </Text>
               {
-                ((moment().unix() * 1000) < eventData?.startDate) &&
                 <View style={{display: 'flex', flexDirection: 'column', margin: 20}}>
                   <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                     <TouchableOpacity onPress={() => onSubmit()}>
@@ -520,11 +517,11 @@ const CreateEventScreen = (props) => {
                           fontFamily: Fonts.bold,
                           fontSize: fontSize.primary,
                           color: Colors.white
-                        }}>อัพเดทกิจกรมม</Text>
+                        }}>อัพเดทกิจกรรม</Text>
                       </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={{marginTop: 15}} onPress={() => onSubmit()}>
+                    <TouchableOpacity style={{marginTop: 15}} onPress={() => props.navigation.pop()}>
                       <View style={{
                         backgroundColor: Colors.red,
                         width:  Platform.OS === 'ios'?  350 : 390,
@@ -560,15 +557,17 @@ const CreateEventScreen = (props) => {
     if(!coverImage.includes('.webp')){
       data.append('coverImage', coverImage ? {uri: coverImage, name: filename, type: type} : null);
     }
-    console.log(data)
+
     api.editEvent(data).then(res => {
       if(res.status === 200){
         props.navigation.pop()
       }
+    },error => {
+      console.log(error)
     })
   }
 
-  return (!isLoad &&
+  return (!isLoad ?
     <View style={{flex: 1, backgroundColor: Colors.gray2}}>
       {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
@@ -576,7 +575,29 @@ const CreateEventScreen = (props) => {
       {
         renderForm()
       }
-    </View>
+    </View> :
+      <View style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        zIndex: 50
+      }}>
+        <View style={{
+          width: 200,
+          height: 150,
+          backgroundColor: Colors.white,
+          borderRadius: 15,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>กำลังโหลดข้อมูล</Text>
+        </View>
+      </View>
   );
 };
 

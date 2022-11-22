@@ -30,6 +30,7 @@ const EventDetailForOrgScreen = (props) => {
   }, []);
 
   const getFeedback = () =>{
+    setFeedback(null)
     api.getFeedback({memberId:memId, eventId: eveId}).then(res => {
       setFeedback(res.data)
     },error => {
@@ -37,6 +38,7 @@ const EventDetailForOrgScreen = (props) => {
     })
   }
   const getRegisterMember = () => {
+    setMemOfEvent(null)
     api.getRegMem({eventId: eveId}).then(res =>{
       if(res.status === 200){
         console.log('GetUserThatRegister')
@@ -111,6 +113,7 @@ const EventDetailForOrgScreen = (props) => {
             }}> ยังไม่มีผู้เข้าร่วมกิจกรรมของคุณ</Text>
             </View>
           }
+
           <ScrollView
             refreshControl={
               <RefreshControl
@@ -129,7 +132,7 @@ const EventDetailForOrgScreen = (props) => {
           }
           </ScrollView>
         </View>
-        <View style={{padding: 5, height: 200}}>
+        <View style={{padding: 5, height: 350}}>
           <Text style={{
             fontFamily: Fonts.bold,
             fontSize: fontSize.primary,
@@ -166,7 +169,7 @@ const EventDetailForOrgScreen = (props) => {
                     }}>{fb?.member?.username}</Text>
                   </View>
                   <View style={{flex: 0.7, justifyContent: 'center', alignItems: 'center', marginTop: 5}}>
-                    <View style={{width: "75%", height: 50, borderRadius: 15, backgroundColor: Colors.gray2, justifyContent: 'center',alignItems: 'center'}}>
+                    <View style={{width: "75%", height: 100, borderRadius: 15, backgroundColor: Colors.gray2, justifyContent: 'center',alignItems: 'center'}}>
                       <Text style={{
                         fontFamily: Fonts.primary,
                         fontSize: fontSize.small,
@@ -180,7 +183,24 @@ const EventDetailForOrgScreen = (props) => {
             }
           </ScrollView>
         </View>
-        <View style={{position: 'relative', bottom: 0, left: 0, right: 0, top: 200}}>
+        <View style={{position: 'relative', bottom: 0, left: 0, right: 0, top: 10}}>
+          <TouchableOpacity style={{ alignItems: 'center', marginBottom: 5}} onPress={()=>{ props.navigation.navigate('EditEvent',{eveId: eveId})}}>
+            <View style={{
+              backgroundColor: Colors.orange,
+              width: Platform.OS == 'ios' ? 350 : 390,
+              padding: 10,
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <Text style={{
+                fontFamily: Fonts.bold,
+                fontSize: fontSize.primary,
+                color: Colors.white
+              }}>แก้ไขกิจกรรม</Text>
+            </View>
+          </TouchableOpacity>
+
           <TouchableOpacity style={{ alignItems: 'center'}} onPress={()=>{
             api.generateCode({memberId: memId, eventId: eveId}).then( async res => {
               if(res.status === 200){

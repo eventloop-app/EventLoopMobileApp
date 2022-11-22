@@ -29,7 +29,7 @@ const CreateEventScreen = (props) => {
       type: "ONLINE",
       startDate: new Date().getTime(),
       endDate: new Date().getTime(),
-      memberId: userInfo.id,
+      memberId: userInfo?.id,
       location: null,
       latitude: "-1",
       longitude: "-1",
@@ -548,7 +548,7 @@ const CreateEventScreen = (props) => {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
       }
       {
-        userInfo ? renderForm() :
+        userInfo !== null ? renderForm() :
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Text style={{
               marginLeft: 10,

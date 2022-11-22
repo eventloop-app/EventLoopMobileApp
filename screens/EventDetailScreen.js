@@ -889,7 +889,7 @@ const EventDetailScreen = (props) => {
             }
             {
               isReview &&
-              <View style={{ alignItems: 'center'}}>
+              <View style={{ alignItems: 'center', marginTop: 10}}>
               <Text  style={{
                 fontFamily: Fonts.bold,
                 fontSize: FontSize.big
@@ -921,7 +921,6 @@ const EventDetailScreen = (props) => {
         }}>
           <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>{isError ? 'มีบางอย่างผิดพลาด': 'กำลังโหลดข้อมูล'}</Text>
         </View>
-
       </View>
   );
 };

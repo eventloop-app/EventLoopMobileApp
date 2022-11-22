@@ -36,7 +36,6 @@ const SearchScreen = ({route, navigation}) => {
       api.getEventBySearch(keyword).then(res => {
         if (res.status === 200) {
           setEvent(res.data.content)
-          setIsLoading(true)
         } else {
         }
       })
@@ -44,7 +43,6 @@ const SearchScreen = ({route, navigation}) => {
       handleClearText()
     }
   }
-
 
   const getNewEvent = (keyword = "", newPage) => {
     setLoadData(true)
@@ -160,9 +158,10 @@ const SearchScreen = ({route, navigation}) => {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
+                marginTop: 200
               }}>
-                <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.black}}>
-                  ไม่มีกิจกรรมที่คุณค้นหา
+                <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.big, color: Colors.gray2}}>
+                  ไม่พบกิจกรรมที่คุณค้นหา
                 </Text>
               </View>) :
             <View style={{
@@ -171,8 +170,9 @@ const SearchScreen = ({route, navigation}) => {
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
+              marginTop: 200
             }}>
-              <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.primary, color: Colors.black}}>
+              <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.big, color: Colors.gray2, }}>
                 ค้นหากิจกรรมที่คุณสนใจ
               </Text>
             </View>

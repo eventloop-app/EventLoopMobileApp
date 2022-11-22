@@ -19,7 +19,6 @@ const EventCards = ({event, onPress, size}) => {
       setTimeout(()=>{
         setIsLoad(false)
       },500)
-
     })
   }, [])
 

@@ -21,10 +21,9 @@ const MemberProfile = ({user, event}) => {
 
   return (
     <View key={user.id} style={{flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
-      <View style={{flex: 0.3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{flex: 0.3, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginLeft: 20,}}>
         <Image
           style={{
-            marginLeft:20,
             width: 50,
             height: 50,
             borderRadius: 100,

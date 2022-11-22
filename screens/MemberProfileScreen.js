@@ -1,52 +1,62 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  Animated,
-  Button,
+  Animated, FlatList,
   Image,
   Platform,
   ScrollView,
   StatusBar,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
-import * as WebBrowser from 'expo-web-browser';
-import {exchangeCodeAsync, makeRedirectUri, useAuthRequest, useAutoDiscovery} from 'expo-auth-session';
 import {useDispatch, useSelector} from "react-redux";
-import {getUserInfo, RegisterSuccess, SignIn, SignOut} from "../actions/auth";
 import api from "../services/api/api";
 import Colors from "../constants/Colors";
 import fontSize from "../constants/FontSize";
 import Fonts from "../constants/Fonts";
-import {useFocusEffect, useNavigation} from "@react-navigation/native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import EventIcons from "../components/eventIcons";
+import {useNavigation} from "@react-navigation/native";
+import EventCards from "../components/eventCards";
 
-WebBrowser.maybeCompleteAuthSession();
 const MemberProfileScreen = (props) => {
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-  const {authInfo} = useSelector(state => state.auth)
   const [userInfo, setUserInfo] = useState(null)
+  const [event, setEvent] = useState(null)
+  const [isFollow, setIsFollow] = useState( null)
 
   useEffect(() => {
     api.getUserDataById(props.route.params.orgPro).then(res => {
-      console.log(res.data)
       setUserInfo(res.data)
     })
   }, [])
 
-  const onFollow = () =>{
-    api.followMember({memberId: props.route.params.user, followingId: props.route.params.orgPro}).then(res =>{
-      if(res.status === 200){
-        console.log(res.data)
-        setTimeout(()=>{
+  useEffect(() => {
+      if (userInfo !== null) {
+        api.getEventByOrg(userInfo.id).then(res => {
+          setEvent(res.data.content)
+        })
+      }
+    }, [userInfo])
+
+  useEffect(()=>{
+    checkIsFollow()
+  },[])
+
+  const checkIsFollow = () =>{
+    api.isFollow({memberId: props.route.params.user, followingId: props.route.params.orgPro}).then(res =>{
+      setIsFollow(res.data.isFollow)
+    })
+  }
+
+  const onFollow = () => {
+    api.followMember({memberId: props.route.params.user, followingId: props.route.params.orgPro}).then(res => {
+      if (res.status === 200) {
+        setTimeout(() => {
           api.getUserDataById(props.route.params.orgPro).then(res => {
             setUserInfo(res.data)
-            console.log(res.data)
+            setTimeout(()=>{
+              checkIsFollow()
+            },500)
           })
-        },1000)
+        }, 500)
       }
     })
   }
@@ -186,11 +196,11 @@ const MemberProfileScreen = (props) => {
               marginBottom: 10
             }}>
               <TouchableOpacity
-                onPress={()=> onFollow()}
+                onPress={() => onFollow()}
                 style={{
                   width: '70%',
                   height: 50,
-                  backgroundColor: Colors.primary,
+                  backgroundColor: (isFollow ? Colors.red : Colors.primary),
                   borderRadius: 50,
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -199,7 +209,7 @@ const MemberProfileScreen = (props) => {
                   fontFamily: Fonts.bold,
                   fontSize: fontSize.primary,
                   color: Colors.white
-                }}>ติดตาม</Text>
+                }}>{isFollow ? 'ยกเลิกติดตาม' : 'ติดตาม'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -235,43 +245,36 @@ const MemberProfileScreen = (props) => {
               fontSize: fontSize.primary,
               color: Colors.black
             }}>
-              กิจกรรมที่คุณเข้าร่วม
+              {`กิจกรรมของ ${userInfo?.username}`}
             </Text>
           </View>
-          <View style={{flex: 1, justifyContent: 'center'}}>
-            <ScrollView
-              contentContainerStyle={{paddingRight: 10}}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              style={{flex: 1, flexDirection: 'row',}}
-              horizontal={true}>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-
-              </View>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-
-              </View>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-              </View>
-            </ScrollView>
+          <View style={{flex: 1, marginLeft:5, marginRight:5}}>
+            {
+              event?.length === 0 ?
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                  <Text style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: fontSize.primary,
+                    color: Colors.gray2
+                  }}>
+                    คุณยังไม่มีกิจกรรมที่เข้าร่วม
+                  </Text>
+                </View>
+                :
+                <FlatList
+                  horizontal={true}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  data={event}
+                  renderItem={({item}) => {
+                    return (
+                      <EventCards event={item}  size={'small'}
+                                  onPress={() => props.navigation.navigate('EventDetail', {event: item, userInfo: userInfo ?? undefined})}/>
+                    )
+                  }}
+                  estimatedItemSize={320}
+                />
+            }
           </View>
         </View>
       </View>
