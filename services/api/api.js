@@ -222,7 +222,7 @@ class api {
   getOrgEvent(memId){
     return apis({
       method: "get",
-      url: `members/${memId}/registerEvent?pageSize=100`,
+      url: `members/${memId}/registerEvent?pageSize=20`,
     })
   }
 
@@ -230,6 +230,14 @@ class api {
     return apis({
       method: "post",
       url: `/events/submitFeedback`,
+      data: data
+    })
+  }
+
+  getFeedback(data){
+    return apis({
+      method: "post",
+      url: `events/getFeedback`,
       data: data
     })
   }
@@ -242,24 +250,32 @@ class api {
     })
   }
 
+  isFollow(data){
+    return apis({
+      method: "post",
+      url: `/members/isFollow`,
+      data: data
+    })
+  }
+
   getEventBySearch(keyword){
     return apis({
       method: "get",
-      url: `events/getEventByKeyword?keyword=${keyword}&pageSize=100`,
+      url: `events/getEventByKeyword?keyword=${keyword}&pageSize=20`,
     })
   }
 
   getEventAttention(){
     return apis({
       method: "get",
-      url: `events/attention?pageSize=100`,
+      url: `events/attention?pageSize=20`,
     })
   }
 
   getEventByRang(lat, lng){
     return apis({
       method: "get",
-      url: `events/range?&pageSize=100&latitude=${lat}&longitude=${lng}&range=10`,
+      url: `events/range?&pageSize=20&latitude=${lat}&longitude=${lng}&range=10`,
     })
   }
 
@@ -268,7 +284,15 @@ class api {
     const tags = selectTag?.map((item) => `&tags=${item}`).join('')
     return apis({
       method: "get",
-      url: `events/getEventByTag?pageSize=100${tags}`,
+      url: `events/getEventByTag?pageSize=20${tags}`,
+    })
+  }
+
+  getEventByFollowing(data){
+    return apis({
+      method: "post",
+      url: `/events/getEventByFollowing`,
+      data: data
     })
   }
 
@@ -276,6 +300,22 @@ class api {
     return apis({
       method: "post",
       url: `/members/follow`,
+      data: data
+    })
+  }
+
+  getFollowerByMemberId(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowerList`,
+      data: data
+    })
+  }
+
+  getFollowingByMemberId(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowingList`,
       data: data
     })
   }

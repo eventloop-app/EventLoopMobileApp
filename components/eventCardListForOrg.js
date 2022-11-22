@@ -7,7 +7,7 @@ import Fonts from "../constants/Fonts";
 import moment from "moment";
 import {toBuddhistYear} from "../constants/Buddhist-year";
 
-const EventCardList = ({item, onPress}) => {
+const EventCardListForOrg = ({item, onPress}) => {
 
   const eventName = item.eventName
   const eventDate = toBuddhistYear(moment(item.startDate), "DD/MM/YYYY")
@@ -189,4 +189,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default EventCardList;
+export default EventCardListForOrg;

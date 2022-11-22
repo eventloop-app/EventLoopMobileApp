@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Animated,
-  Button,
+  Button, FlatList,
   Image,
   Platform,
   ScrollView,
@@ -14,7 +14,7 @@ import {
 import * as WebBrowser from 'expo-web-browser';
 import {exchangeCodeAsync, makeRedirectUri, useAuthRequest, useAutoDiscovery} from 'expo-auth-session';
 import {useDispatch, useSelector} from "react-redux";
-import {getUserInfo, RegisterSuccess, SignIn, SignOut} from "../actions/auth";
+import {getUserInfo, RegisterSuccess, SignIn, SignOut, UpdateProfileData} from "../actions/auth";
 import api from "../services/api/api";
 import Colors from "../constants/Colors";
 import fontSize from "../constants/FontSize";
@@ -22,6 +22,7 @@ import Fonts from "../constants/Fonts";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import EventIcons from "../components/eventIcons";
+import EventCards from "../components/eventCards";
 
 WebBrowser.maybeCompleteAuthSession();
 const ProfileScreen = (props) => {
@@ -32,15 +33,14 @@ const ProfileScreen = (props) => {
   const [showModel, setShowModel] = useState(false)
   const translation = useRef(new Animated.Value(450)).current;
   const [isLogin, setIsLogin] = useState(false)
-
+  const [event, setEvent] = useState(null)
 
   useFocusEffect(
     useCallback(() => {
-      // Animated.timing(translation, {
-      //     toValue: 0,
-      //     delay: 100,
-      //     useNativeDriver: true,
-      // }).start();
+      if(userInfo !== null){
+        dispatch(UpdateProfileData(userInfo?.id))
+      }
+
       return () => {
         console.log('Unmount')
         translation.setValue(450)
@@ -50,7 +50,6 @@ const ProfileScreen = (props) => {
 
   useEffect(() => {
     console.log('getUserInfo')
-    console.log(userInfo)
     if (authInfo === null && userInfo === null) {
       dispatch(getUserInfo())
     } else {
@@ -76,6 +75,23 @@ const ProfileScreen = (props) => {
       })
     }
   }, [authInfo])
+
+  useEffect(()=>{
+    getEventRegister()
+  },[userInfo])
+
+  const getEventRegister = () =>{
+    if (userInfo !== null) {
+      api.getOrgEvent(userInfo?.id).then(res => {
+        if (res.status === 200) {
+          console.log("Profile: GetEvent")
+          setTimeout(()=>{
+            setEvent(res.data.content)
+          }, 300)
+        }
+      })
+    }
+  }
 
   const discovery = useAutoDiscovery(
     'https://login.microsoftonline.com/6f4432dc-20d2-441d-b1db-ac3380ba633d/v2.0'
@@ -339,7 +355,9 @@ const ProfileScreen = (props) => {
                         fontSize: fontSize.primary,
                         color: Colors.black
                       }}>
-                        100
+                        {
+                          userInfo?.numOfFollower
+                        }
                       </Text>
                       <Text style={{
                         fontFamily: Fonts.bold,
@@ -362,7 +380,9 @@ const ProfileScreen = (props) => {
                         fontSize: fontSize.primary,
                         color: Colors.black
                       }}>
-                        100
+                        {
+                          userInfo?.numOfFollowing
+                        }
                       </Text>
                       <Text style={{
                         fontFamily: Fonts.bold,
@@ -390,7 +410,7 @@ const ProfileScreen = (props) => {
                       style={{
                         fontFamily: Fonts.primary,
                         fontSize: fontSize.small,
-                        color: Colors.black
+                        color: Colors.gray2
                       }}>
                   {
                     userInfo?.description ?? 'ยังไม่เพิ่มคำบรรยายของคุณ'
@@ -426,7 +446,7 @@ const ProfileScreen = (props) => {
                   </TouchableOpacity>
                   :
                   <TouchableOpacity
-                    onPress={() => signOut()}
+                    onPress={() => navigation.navigate('ManageEvent')}
                     style={{
                       width: '70%',
                       height: 50,
@@ -470,7 +490,7 @@ const ProfileScreen = (props) => {
           borderRadius: 25,
         }}>
         <View style={{flex: 1, marginTop: 10}}>
-          <View style={{padding: 10}}>
+          <View style={{padding: 5}}>
             <Text style={{
               fontFamily: Fonts.bold,
               fontSize: fontSize.primary,
@@ -479,40 +499,33 @@ const ProfileScreen = (props) => {
               กิจกรรมที่คุณเข้าร่วม
             </Text>
           </View>
-          <View style={{flex: 1, justifyContent: 'center'}}>
-            <ScrollView
-              contentContainerStyle={{paddingRight: 10}}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              style={{flex: 1, flexDirection: 'row',}}
-              horizontal={true}>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-
-              </View>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-
-              </View>
-              <View style={{
-                width: 180,
-                height: '90%',
-                borderRadius: 15,
-                backgroundColor: 'pink',
-                marginLeft: 10
-              }}>
-              </View>
-            </ScrollView>
+          <View style={{flex: 1, marginLeft:5, marginRight:5}}>
+            {
+              event?.length === 0 ?
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                  <Text style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: fontSize.primary,
+                    color: Colors.gray2
+                  }}>
+                    คุณยังไม่มีกิจกรรมที่เข้าร่วม
+                  </Text>
+                </View>
+               :
+                <FlatList
+                horizontal={true}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                data={event}
+                renderItem={({item}) => {
+                  return (
+                    <EventCards event={item}  size={'small'}
+                                onPress={() => props.navigation.navigate('EventDetail', {event: item, userInfo: userInfo ?? undefined})}/>
+                  )
+                }}
+                estimatedItemSize={320}
+              />
+            }
           </View>
         </View>
       </View>

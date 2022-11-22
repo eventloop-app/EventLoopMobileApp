@@ -1,5 +1,6 @@
 import storages from "../services/storage/storages";
-import {GET_TOKEN, SAVE_TOKEN_SUCCESS} from "./types";
+import {GET_TOKEN, SAVE_TOKEN_SUCCESS, UPDATE_TOKEN} from "./types";
+
 
 
 export const Token = (token) => (dispatch) => {
@@ -16,4 +17,5 @@ export const getToken = () => (dispatch) => {
     dispatch({type: GET_TOKEN, payload: res})
   })
 }
+
 

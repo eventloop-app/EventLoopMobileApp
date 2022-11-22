@@ -30,9 +30,10 @@ import EditEventScreen from "./screens/EditEventScreen";
 import BookMarkListScreen from "./screens/BookMarkListScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import EventDetailForOrgScreen from "./screens/EventDetailForOrgScreen";
-import EventListForOrgScreen from "./screens/EventListForOrgScreen";
+import EventListForJoinScreen from "./screens/EventListForJoinScreen";
 import api from "./services/api/api";
 import MemberProfileScreen from "./screens/MemberProfileScreen";
+import EventListForCreateScreen from "./screens/EventListForCreateScreen";
 
 moment().locale('th')
 
@@ -206,7 +207,7 @@ export default function App({route, navigation}) {
                               })
                             }
                             return (
-                              route.params.userInfo &&
+                              (route.params.userInfo) &&
                               <TouchableOpacity
                                 style={{
                                   borderRadius: 100,
@@ -219,6 +220,8 @@ export default function App({route, navigation}) {
                                 onPress={()=> {
                                   api.stampBookMark({memberId:route.params.userInfo.id, eventId: route.params.event.id}).then(res => {
                                     navigation.navigate('EventDetail', {event: route.params.event, userInfo: route.params.userInfo, isCheck: res.data.isBookmark})
+                                  },error =>{
+                                    console.log(error)
                                   })
                                 }}
                               >
@@ -364,7 +367,7 @@ export default function App({route, navigation}) {
                 }}
                 onPress={() => navigation.pop()}
               >
-                <Ionicons name="md-close" size={25} color={Colors.black}/>
+                <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
               </TouchableOpacity>
             )
           })}/>
@@ -379,7 +382,7 @@ export default function App({route, navigation}) {
               fontSize: fontSize.medium,
               color: Colors.black,
             },
-            title: "จัดการกิจกรรม",
+            title: "ข้อมูลกิจกรรม",
             headerTintColor: Colors.white,
             headerBackTitle: '',
             headerBackVisible: false,
@@ -400,7 +403,38 @@ export default function App({route, navigation}) {
             )
           })}/>
 
-          <Stack.Screen name={'EventListForOrg'} component={EventListForOrgScreen} options={({route, navigation}) => ({
+          <Stack.Screen name={'EventListForCreate'} component={EventListForCreateScreen} options={({route, navigation}) => ({
+            headerShown: true,
+            headerTransparent: true,
+            tabBarShowLabel: false,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.medium,
+              color: Colors.black,
+            },
+            title: "กิจกรรมที่ฉันสร้าง",
+            headerTintColor: Colors.white,
+            headerBackTitle: '',
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{
+                  borderRadius: 100,
+                  backgroundColor: 'rgba(255,255,255,0.8)',
+                  width: 30,
+                  height: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                onPress={() => navigation.pop()}
+              >
+                <Ionicons name="arrow-back-outline" size={25} color={Colors.black}/>
+              </TouchableOpacity>
+            )
+          })}/>
+
+          <Stack.Screen name={'EventListForJoin'} component={EventListForJoinScreen} options={({route, navigation}) => ({
             headerShown: true,
             headerTransparent: true,
             tabBarShowLabel: false,

@@ -5,3 +5,4 @@ export const REGISTER_SUCCESS = "REGISTER_SUCCESS";
 export const SAVE_TOKEN_SUCCESS = "SAVE_TOKEN_SUCCESS";
 export const GET_TOKEN = "GET_TOKEN";
 export const GET_USERINFO = "GET_USERINFO";
+export const UPDATE_TOKEN = "UPDATE_TOKEN";

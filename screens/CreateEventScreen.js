@@ -13,12 +13,15 @@ import api from "../services/api/api";
 import FormData from "form-data";
 import * as ImagePicker from "expo-image-picker";
 import fontSize from "../constants/FontSize";
+import {useDispatch, useSelector} from "react-redux";
+import {getUserInfo} from "../actions/auth";
 
 const weekdays = 'อาทิตย์_จันทร์_อังคาร_พุธ_พฤหัสบดี_ศุกร์_เสาร์'.split('_')
 
 const CreateEventScreen = (props) => {
+  const dispatch = useDispatch();
   const input_num = useRef()
-  const [userData, setUserData] = useState(null)
+  const {userInfo} = useSelector(state => state.auth)
   const [eventData, setEventData] = useState(
     {
       eventName: null,
@@ -26,7 +29,7 @@ const CreateEventScreen = (props) => {
       type: "ONLINE",
       startDate: new Date().getTime(),
       endDate: new Date().getTime(),
-      memberId: null,
+      memberId: userInfo?.id,
       location: null,
       latitude: "-1",
       longitude: "-1",
@@ -67,19 +70,7 @@ const CreateEventScreen = (props) => {
   }, [])
 
   const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-          setEventData({...eventData, memberId: user.data.id})
-        }
-      }).catch(error => {
-        setUserData(null)
-        setEventData({...eventData, memberId: null})
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
+    dispatch(getUserInfo())
   }
 
   const onChangeStartDate = (date) => {
@@ -134,7 +125,7 @@ const CreateEventScreen = (props) => {
         </Text>
         <View style={{marginTop: 30}}>
           <RNDateTimePicker
-            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 5)).setHours(0, 0, 0, 0))}
+            minimumDate={dateStatus ? new Date(new Date(eventData.startDate).setHours(new Date(eventData.startDate).getHours() + 1)) : new Date(new Date(new Date().setDate(new Date().getDate() + 0)).setHours(0, 0, 0, 0))}
             mode={dateStatus ? "time" : "datetime"}
             value={dateStatus ? new Date(eventData.endDate) : new Date(eventData.startDate)}
             style={{height: 100, fontFamily: Fonts.primary}}
@@ -216,7 +207,7 @@ const CreateEventScreen = (props) => {
                   defaultValue={eventData.eventName}
                   style={{fontFamily: Fonts.bold, fontSize: FontSize.large, height: 50}}
                   multiline={false}
-                  placeholder={"ใส่รายละเอียดกิจกรรม"}
+                  placeholder={"ใส่ชื่อกิจกรรม"}
                   placeholderTextColor={Colors.gray2}
                   onChangeText={(input) => setEventData({...eventData, eventName: input})}
                 />
@@ -273,7 +264,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginTop: 5,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเลือกอย่างน้อย 1 แท็ก
                 </Text>
@@ -398,7 +389,7 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องมีผู้เข้าร่วมอย่างน้อย 2 คน
               </Text>
@@ -448,7 +439,7 @@ const CreateEventScreen = (props) => {
                   style={{
                     marginLeft: 10,
                     fontFamily: Fonts.bold,
-                    fontSize: FontSize.small,
+                    fontSize: FontSize.vary_small,
                     color: Colors.yellow
                   }}>ต้องเป็นลิงค์ในการเข้าร่วมกิจกรรมเท่านั้น
                 </Text>
@@ -473,7 +464,7 @@ const CreateEventScreen = (props) => {
                 style={{
                   marginLeft: 10,
                   fontFamily: Fonts.bold,
-                  fontSize: FontSize.small,
+                  fontSize: FontSize.vary_small,
                   color: Colors.yellow
                 }}>ต้องระบุรายกิจกรรมอย่างน้อย 20 ตัวอักษร
               </Text>
@@ -523,7 +514,7 @@ const CreateEventScreen = (props) => {
     const data = new FormData();
     data.append('eventInfo', JSON.stringify(eventData));
     data.append('coverImage', coverImage ? {uri: coverImage, name: filename, type: type} : null);
-    console.log(data)
+
     api.createEvent(data).then(async res => {
       if(res.status === 200){
         console.log('Pass')
@@ -549,7 +540,7 @@ const CreateEventScreen = (props) => {
   }
 
   return (
-    <View style={{flex: 1, backgroundColor: userData ? Colors.gray2 : Colors.white}}>
+    <View style={{flex: 1, backgroundColor: userInfo ? Colors.gray2 : Colors.white}}>
       {
         showLoad && renderLoad()
       }
@@ -557,7 +548,7 @@ const CreateEventScreen = (props) => {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
       }
       {
-        userData ? renderForm() :
+        userInfo !== null ? renderForm() :
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Text style={{
               marginLeft: 10,
