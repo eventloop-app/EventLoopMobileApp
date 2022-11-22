@@ -18,10 +18,10 @@ jobs:
           command_timeout: 5m
           script: |
             ls -la
-            cd EventLoopMobileApp/
-            sudo kill -9 `sudo lsof -t -i:19002`
-            git pull
-            yarn
+#            cd EventLoopMobileApp/
+#            sudo kill -9 `sudo lsof -t -i:19002`
+#            git pull
+#            yarn
             
       - uses: sarisia/actions-status-discord@v1
         if: success()
