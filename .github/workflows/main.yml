@@ -19,7 +19,7 @@ jobs:
           script: |
             ls -la
             cd EventLoopMobileApp/
-            sudo kill -9 `sudo lsof -t -i:19002`
+            sudo kill -9 `sudo lsof -t -i:19000`
             git pull
             yarn
             
