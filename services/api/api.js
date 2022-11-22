@@ -234,6 +234,14 @@ class api {
     })
   }
 
+  getFeedback(data){
+    return apis({
+      method: "post",
+      url: `events/getFeedback`,
+      data: data
+    })
+  }
+
   isReview(data){
     return apis({
       method: "post",

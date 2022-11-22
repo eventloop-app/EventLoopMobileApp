@@ -31,7 +31,6 @@ const MemberProfileScreen = (props) => {
   const [userInfo, setUserInfo] = useState(null)
 
   useEffect(() => {
-    console.log(props.route.params)
     api.getUserDataById(props.route.params.orgPro).then(res => {
       console.log(res.data)
       setUserInfo(res.data)
@@ -42,10 +41,12 @@ const MemberProfileScreen = (props) => {
     api.followMember({memberId: props.route.params.user, followingId: props.route.params.orgPro}).then(res =>{
       if(res.status === 200){
         console.log(res.data)
-        api.getUserDataById(props.route.params.orgPro).then(res => {
-          setUserInfo(res.data)
-          console.log(res.data)
-        })
+        setTimeout(()=>{
+          api.getUserDataById(props.route.params.orgPro).then(res => {
+            setUserInfo(res.data)
+            console.log(res.data)
+          })
+        },1000)
       }
     })
   }

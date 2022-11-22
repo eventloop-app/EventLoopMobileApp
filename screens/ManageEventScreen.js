@@ -20,7 +20,7 @@ const ManageEventScreen = (props) => {
         flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}>
         <TouchableOpacity
-
+          onPress={()=> navigation.navigate('EventListForCreate')}
           style={{
           width: "90%", height: 200, backgroundColor: Colors.primary, borderRadius: 15,
           shadowColor: "#000",

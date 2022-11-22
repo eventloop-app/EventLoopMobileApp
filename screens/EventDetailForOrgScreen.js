@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Image, Platform, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Colors from "../constants/Colors";
 import Fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
 import api from "../services/api/api";
 import FontSize from "../constants/FontSize";
+import MemberProfile from "../components/memberProfile";
 
 const EventDetailForOrgScreen = (props) => {
   const memId = props.route.params.memId
@@ -13,14 +14,41 @@ const EventDetailForOrgScreen = (props) => {
   const [checkCode, setCheckCode] = useState(null)
   const [showModelQR, setShowModelQR] = useState(false)
   const [memOfEvent, setMemOfEvent] = useState(null)
+  const [refreshing, setRefreshing] = useState(false);
+  const [feedback, setFeedback] =useState(null)
 
   useEffect(()=>{
-    api.getRegMem({eventId: props.route.params.eve.id, memberId: props.route.params.memId}).then(res =>{
-      if(res.status === 200){
-        setMemOfEvent(res.data)
-      }
-    })
+    getRegisterMember()
+    getFeedback()
   }, [])
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    console.log('Refresh')
+    getRegisterMember()
+    getFeedback()
+  }, []);
+
+  const getFeedback = () =>{
+    api.getFeedback({memberId:memId, eventId: eveId}).then(res => {
+      setFeedback(res.data)
+    },error => {
+      console.log(error)
+    })
+  }
+  const getRegisterMember = () => {
+    api.getRegMem({eventId: eveId}).then(res =>{
+      if(res.status === 200){
+        console.log('GetUserThatRegister')
+        setMemOfEvent(res.data)
+        setTimeout(()=>{
+          setRefreshing(false)
+        },300)
+      }
+    },error => {
+      console.log(error)
+    })
+  }
 
   const modelQR = () => (
     <View style={{
@@ -64,7 +92,7 @@ const EventDetailForOrgScreen = (props) => {
         showModelQR && modelQR()
       }
       <View style={{marginTop: Platform.OS === 'ios' ? 100 : 80}}>
-        <View style={{padding: 5, height: 400}}>
+        <View style={{padding: 5, height: 200, }}>
           <Text style={{
             fontFamily: Fonts.bold,
             fontSize: fontSize.primary,
@@ -73,35 +101,83 @@ const EventDetailForOrgScreen = (props) => {
           }}>
             รายชื่อผู้เข้าร่วม
           </Text>
+          {
+            memOfEvent?.length === 0 && <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <Text style={{
+              fontFamily: Fonts.bold,
+              fontSize: fontSize.primary,
+              color: Colors.gray2,
+              marginTop: 100
+            }}> ยังไม่มีผู้เข้าร่วมกิจกรรมของคุณ</Text>
+            </View>
+          }
           <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
             contentContainerStyle={{paddingBottom: 100}}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             >
           {
             memOfEvent?.map((mem,index) => (
-              <View key={index} style={{flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
-                <Image
-                  style={{
-                    marginLeft:5,
-                    width: 50,
-                    height: 50,
-                    borderRadius: 100,
-                    resizeMode: 'cover'
-                  }}
-                  source={{
-                    uri: (mem.profileUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
-                  }}
-                />
-                <Text style={{
-                  fontFamily: Fonts.bold,
-                  fontSize: fontSize.primary,
-                  color: Colors.black,
-                  marginLeft: 5
-                }}>{mem.username}</Text>
-              </View>
+              <MemberProfile key={index} user={mem} event={eveId}/>
             ))
           }
+          </ScrollView>
+        </View>
+        <View style={{padding: 5, height: 200}}>
+          <Text style={{
+            fontFamily: Fonts.bold,
+            fontSize: fontSize.primary,
+            color: Colors.black,
+            marginLeft: 5
+          }}>
+            คำแนะนำกิจกรรมจากผู้เข้าร่วม
+          </Text>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
+            {
+              feedback?.map((fb,index) => (
+                <View key={index} style={{flexDirection: 'column', marginTop: 20}}>
+                  <View style={{flex: 0.3, flexDirection: 'row', alignItems: 'center'}}>
+                    <Image
+                      style={{
+                        marginLeft:20,
+                        width: 50,
+                        height: 50,
+                        borderRadius: 100,
+                        resizeMode: 'cover'
+                      }}
+                      source={{
+                        uri: (fb?.member?.profileUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
+                      }}
+                    />
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: fontSize.primary,
+                      color: Colors.black,
+                      marginLeft: 5
+                    }}>{fb?.member?.username}</Text>
+                  </View>
+                  <View style={{flex: 0.7, justifyContent: 'center', alignItems: 'center', marginTop: 5}}>
+                    <View style={{width: "75%", height: 50, borderRadius: 15, backgroundColor: Colors.gray2, justifyContent: 'center',alignItems: 'center'}}>
+                      <Text style={{
+                        fontFamily: Fonts.primary,
+                        fontSize: fontSize.small,
+                        color: Colors.black,
+                        marginRight: 5
+                      }}>{fb?.feedback}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            }
           </ScrollView>
         </View>
         <View style={{position: 'relative', bottom: 0, left: 0, right: 0, top: 200}}>

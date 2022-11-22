@@ -7,10 +7,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import {toBuddhistYear} from "../constants/Buddhist-year";
 import moment from "moment";
 import api from "../services/api/api";
-import EventIcons from "./eventIcons";
 import {MaterialIcons} from "@expo/vector-icons";
 
-const EventCards = ({event, onPress}) => {
+const EventCards = ({event, onPress, size}) => {
   const [userJoin, setUserJoin] = useState(null)
   const [isLoad, setIsLoad] = useState(true)
 
@@ -84,10 +83,32 @@ const EventCards = ({event, onPress}) => {
   return (
     !isLoad &&
       <TouchableOpacity activeOpacity={1} onPress={onPress}>
-        <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: 290}}>
+        <View style={{marginTop: 10, marginLeft: 5, marginRight: 5, width: '100%', height: (size === 'small' ? 220 : 290)}}>
+
+          {
+            (event.endDate < moment().unix() * 1000) &&
+            <View style={{
+              position: "absolute",
+              width: (size === 'small' ? 180 : 210),
+              height: (size === 'small' ? 220 : 280),
+              borderRadius: 15,
+              padding: 5,
+              zIndex: 50,
+              backgroundColor: "rgba(0,0,0,0.75)"
+            }}>
+              <View style={{flex :1, justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={{
+                  fontFamily: Fonts.bold,
+                  fontSize: fontSize.primary,
+                  color: Colors.red,
+                }}>กิจกรรมสิ้นสุดแล้ว</Text>
+              </View>
+            </View>
+          }
+
           <View style={{
-            width: 210,
-            height: 280,
+            width: (size === 'small' ? 180 : 210),
+            height: (size === 'small' ? 220 : 280),
             borderRadius: 15,
             padding: 5,
             shadowColor: "#000",
@@ -160,7 +181,7 @@ const EventCards = ({event, onPress}) => {
                   marginLeft: 5
                 }}>{moment(event.startDate).format("HH:mm") + " - " + moment(event.endDate).format("HH:mm") + " น."}</Text>
               </View>
-              {(userJoin?.length > 0) &&
+              {(userJoin?.length > 0 && size !== "small") &&
                 <View style={{
                   marginTop: 4,
                   position: 'relative',
@@ -175,7 +196,7 @@ const EventCards = ({event, onPress}) => {
                 </View>
               }
 
-              {(userJoin?.length === 0) &&
+              {(userJoin?.length === 0 && size !== "small") &&
                 <View style={{
                   marginTop: 4,
                   position: 'relative',

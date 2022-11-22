@@ -4,8 +4,9 @@ import {Image, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, Vie
 import EventCardList from "../components/eventCardList";
 import {getUserInfo} from "../actions/auth";
 import {useDispatch, useSelector} from "react-redux";
+import EventCardListForOrg from "../components/eventCardListForOrg";
 
-const EventListForJoinScreen = (props) => {
+const EventListForCreateScreen = (props) => {
   const {userInfo} = useSelector(state => state.auth)
   const [event, setEvent] = useState(null)
   const dispatch = useDispatch();
@@ -41,9 +42,8 @@ const EventListForJoinScreen = (props) => {
 
   const getEventOrg = () =>{
     if (userInfo !== null) {
-      api.getOrgEvent(userInfo.id).then(res => {
+      api.getEventByOrg(userInfo.id).then(res => {
         if (res.status === 200) {
-
           setEvent(res.data.content)
           console.log(res.data.content)
           setTimeout(()=>{
@@ -76,7 +76,7 @@ const EventListForJoinScreen = (props) => {
         showsHorizontalScrollIndicator={false}>
         {
           event?.map((eve, index) => (
-            <EventCardList key={index} item={eve} onPress={() => props.navigation.navigate('EventDetail', {event: eve})}/>
+            <EventCardListForOrg key={index} item={eve} onPress={() => props.navigation.navigate('ManageEventByOrg', {eve: eve, memId: userInfo.id})}/>
           ))
         }
       </ScrollView>
@@ -84,4 +84,4 @@ const EventListForJoinScreen = (props) => {
   );
 };
 
-export default EventListForJoinScreen;
+export default EventListForCreateScreen;

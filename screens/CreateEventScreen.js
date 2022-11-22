@@ -13,12 +13,15 @@ import api from "../services/api/api";
 import FormData from "form-data";
 import * as ImagePicker from "expo-image-picker";
 import fontSize from "../constants/FontSize";
+import {useDispatch, useSelector} from "react-redux";
+import {getUserInfo} from "../actions/auth";
 
 const weekdays = 'อาทิตย์_จันทร์_อังคาร_พุธ_พฤหัสบดี_ศุกร์_เสาร์'.split('_')
 
 const CreateEventScreen = (props) => {
+  const dispatch = useDispatch();
   const input_num = useRef()
-  const [userData, setUserData] = useState(null)
+  const {userInfo} = useSelector(state => state.auth)
   const [eventData, setEventData] = useState(
     {
       eventName: null,
@@ -26,7 +29,7 @@ const CreateEventScreen = (props) => {
       type: "ONLINE",
       startDate: new Date().getTime(),
       endDate: new Date().getTime(),
-      memberId: null,
+      memberId: userInfo.id,
       location: null,
       latitude: "-1",
       longitude: "-1",
@@ -67,19 +70,7 @@ const CreateEventScreen = (props) => {
   }, [])
 
   const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-          setEventData({...eventData, memberId: user.data.id})
-        }
-      }).catch(error => {
-        setUserData(null)
-        setEventData({...eventData, memberId: null})
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
+    dispatch(getUserInfo())
   }
 
   const onChangeStartDate = (date) => {
@@ -549,7 +540,7 @@ const CreateEventScreen = (props) => {
   }
 
   return (
-    <View style={{flex: 1, backgroundColor: userData ? Colors.gray2 : Colors.white}}>
+    <View style={{flex: 1, backgroundColor: userInfo ? Colors.gray2 : Colors.white}}>
       {
         showLoad && renderLoad()
       }
@@ -557,7 +548,7 @@ const CreateEventScreen = (props) => {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
       }
       {
-        userData ? renderForm() :
+        userInfo ? renderForm() :
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Text style={{
               marginLeft: 10,

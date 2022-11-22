@@ -1,6 +1,7 @@
 import decode from "../services/jwt/decode";
 import storages from "../services/storage/storages";
 import {GET_USERINFO, REGISTER_SUCCESS, SIGN_IN_SUCCESS, SIGN_OUT} from "./types";
+import api from "../services/api/api";
 
 export const SignIn = (accessToken, refreshToken, idToken) => (dispatch) => {
   const user = decode.jwt(idToken)
@@ -23,6 +24,15 @@ export const SignOut = () => (dispatch) => {
 export const RegisterSuccess = (data) => (dispatch) => {
   storages.save('userInfo', JSON.stringify(data))
   dispatch({type: REGISTER_SUCCESS, payload: data})
+}
+
+export const UpdateProfileData = (memId) => (dispatch) => {
+  api.getUserDataById(memId).then(res => {
+    if(res.status === 200){
+      storages.save('userInfo', JSON.stringify(res.data))
+      dispatch({type: REGISTER_SUCCESS, payload: res.data})
+    }
+  })
 }
 
 export const getUserInfo = () => (dispatch) => {

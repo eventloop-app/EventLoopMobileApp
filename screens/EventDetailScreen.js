@@ -141,7 +141,9 @@ const EventDetailScreen = (props) => {
     }
     api.isRegisterEvent(data).then(res => {
       if (res.status === 200) {
+        console.log("CheckIsRegister")
         setIsRegister(res.data.isRegister)
+        console.log(res.data.isRegister)
         getIsCheckIn()
         getIsReview()
       }
@@ -309,11 +311,14 @@ const EventDetailScreen = (props) => {
       memberId: userInfo?.id,
       eventId: eventInfo?.id
     }
+
     api.checkIn(data).then(res => {
       if(res.status === 200){
         setShowModelCheckIn(false)
         setIsCheckIn(true)
       }
+    },error=>{
+      console.log(error)
     })
   }
 
@@ -357,7 +362,7 @@ const EventDetailScreen = (props) => {
         <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>เช็คอินกิจกรรม</Text>
         <View style={{flex: 1, justifyContent: 'center', marginTop: -30}}>
           <TextInput defaultValue={codeCheckIn} keyboardType={'number-pad'} maxLength={6} multiline={true} placeholder={'กรอกรหัสเช็คอินกิจกรรม'}
-                     style={{fontFamily: Fonts.bold, fontSize: fontSize.big, textAlign: 'center'}}/>
+                     style={{fontFamily: Fonts.bold, fontSize: fontSize.big, textAlign: 'center'}} onChangeText={(text) => setCodeCheckIn(text)}/>
         </View>
 
         <TouchableOpacity style={{position: 'relative', bottom: 50, margin: 10}} onPress={() => props.navigation.navigate('Scanner')}>
@@ -425,7 +430,7 @@ const EventDetailScreen = (props) => {
     switch (userInfo?.role) {
       case 'MEMBER':
         return (
-          (userInfo?.id !== eventInfo?.organizerId) ?
+          (userInfo?.id !== eventInfo?.organizerId && isRegister === false) ?
             <View>
               <TouchableOpacity disabled={eventInfo?.numberOfRegister === eventInfo?.numberOfPeople} style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
                                 activeOpacity={0.8} onPress={() => setShowModelConfirm(true)}>
@@ -465,14 +470,33 @@ const EventDetailScreen = (props) => {
             </View> :
             ((isRegister && !isReview) &&
               <View>
+                <TouchableOpacity disabled={(eventInfo?.numberOfRegister === eventInfo?.numberOfPeople || moment().unix() * 1000 > eventInfo.startDate)} style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
+                                  activeOpacity={0.8} onPress={() => setShowModelConfirm(true)}>
+                  <View style={{
+                    width: "89%",
+                    height: 60,
+                    backgroundColor: isRegister ? (moment().unix() * 1000 > eventInfo.startDate ? Colors.gray2 : Colors.orange) : (eventInfo?.numberOfRegister === eventInfo?.numberOfPeople ? Colors.gray2 : Colors.primary),
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{
+                      fontFamily: Fonts.bold,
+                      fontSize: FontSize.primary,
+                      color: Colors.white
+                    }}>{isRegister ? 'ยกเลิกเข้าร่วมกิจกรรม' : 'เข้าร่วมกิจกรรม'}</Text>
+                  </View>
+                </TouchableOpacity>
+
                 <TouchableOpacity
+                  disabled={moment().unix() * 1000 < eventInfo.startDate}
                   style={{justifyContent: 'center', alignItems: 'center', marginBottom: 20}}
                   activeOpacity={0.8} onPress={() => isCheckIn ? setShowModelReview(true) : setShowModelCheckIn(true)}
                 >
                   <View style={{
-                    width: 340,
+                    width: "89%",
                     height: 60,
-                    backgroundColor: Colors.primary,
+                    backgroundColor: (moment().unix() * 1000 < eventInfo.startDate ? Colors.gray2 : Colors.primary),
                     borderRadius: 12,
                     justifyContent: 'center',
                     alignItems: 'center'
@@ -810,7 +834,7 @@ const EventDetailScreen = (props) => {
                 กิจกรรมนี้จัดโดย
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 5, marginLeft: 10}}>
-                <TouchableOpacity disabled={userInfo === null} onPress={()=> navigation.navigate('MemberProfile', {orgPro: eventInfo.organizerId, user: userInfo.id})} style={{flexDirection: 'row', justifyContent: 'center', alignItems:"center"}}>
+                <TouchableOpacity disabled={(userInfo === null || userInfo.id === eventInfo.organizerId)} onPress={()=> navigation.navigate('MemberProfile', {orgPro: eventInfo.organizerId, user: userInfo.id})} style={{flexDirection: 'row', justifyContent: 'center', alignItems:"center"}}>
                   <View style={{
                     width: 50,
                     height: 50,
