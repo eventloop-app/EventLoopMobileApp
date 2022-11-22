@@ -523,7 +523,7 @@ const CreateEventScreen = (props) => {
     const data = new FormData();
     data.append('eventInfo', JSON.stringify(eventData));
     data.append('coverImage', coverImage ? {uri: coverImage, name: filename, type: type} : null);
-    console.log(data)
+
     api.createEvent(data).then(async res => {
       if(res.status === 200){
         console.log('Pass')

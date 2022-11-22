@@ -280,6 +280,22 @@ class api {
     })
   }
 
+  getFollowerByMemberId(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowerList`,
+      data: data
+    })
+  }
+
+  getFollowingByMemberId(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowingList`,
+      data: data
+    })
+  }
+
 
 
 

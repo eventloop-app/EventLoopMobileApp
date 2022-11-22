@@ -33,14 +33,8 @@ const ProfileScreen = (props) => {
   const translation = useRef(new Animated.Value(450)).current;
   const [isLogin, setIsLogin] = useState(false)
 
-
   useFocusEffect(
     useCallback(() => {
-      // Animated.timing(translation, {
-      //     toValue: 0,
-      //     delay: 100,
-      //     useNativeDriver: true,
-      // }).start();
       return () => {
         console.log('Unmount')
         translation.setValue(450)
@@ -50,7 +44,6 @@ const ProfileScreen = (props) => {
 
   useEffect(() => {
     console.log('getUserInfo')
-    console.log(userInfo)
     if (authInfo === null && userInfo === null) {
       dispatch(getUserInfo())
     } else {
@@ -339,7 +332,9 @@ const ProfileScreen = (props) => {
                         fontSize: fontSize.primary,
                         color: Colors.black
                       }}>
-                        100
+                        {
+                          userInfo?.numOfFollower
+                        }
                       </Text>
                       <Text style={{
                         fontFamily: Fonts.bold,
@@ -362,7 +357,9 @@ const ProfileScreen = (props) => {
                         fontSize: fontSize.primary,
                         color: Colors.black
                       }}>
-                        100
+                        {
+                          userInfo?.numOfFollowing
+                        }
                       </Text>
                       <Text style={{
                         fontFamily: Fonts.bold,

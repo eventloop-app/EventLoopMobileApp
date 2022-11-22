@@ -54,7 +54,7 @@ const CreateEventScreen = (props) => {
       } else if (props.route.params?.eveId !== undefined && props.route.params?.eveId !== null) {
         console.log('GetEvent')
         api.getEventById(props.route.params?.eveId).then(res => {
-          console.log(res.data)
+
           setEventData({
             eventId: res.data.id,
             eventName: res.data.eventName,

@@ -43,7 +43,7 @@ const EventListForJoinScreen = (props) => {
     if (userInfo !== null) {
       api.getOrgEvent(userInfo.id).then(res => {
         if (res.status === 200) {
-          console.log(res.data.content)
+
           setEvent(res.data.content)
           setTimeout(()=>{
             console.log('Refreshed')

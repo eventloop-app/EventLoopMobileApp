@@ -8,6 +8,7 @@ import moment from "moment";
 import {toBuddhistYear} from "../constants/Buddhist-year";
 
 const EventCardList = ({item, onPress}) => {
+  console.log(item)
   const eventName = item.eventName
   const eventDate = toBuddhistYear(moment(item.startDate), "DD/MM/YYYY")
   const eventTime = moment(item.startDate).format("HH:mm") + "-" + moment(item.endDate).format("HH:mm") + " น."
