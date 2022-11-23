@@ -72,6 +72,19 @@ const BookMarkListScreen = (props) => {
               <EventCardList key={index} item={eve} onPress={()=> props.navigation.navigate('EventDetail', {event: {id: eve.id}, userInfo: userInfo})}/>
             ))
           }
+
+        {
+          bookMark?.length === 0 &&
+          <Text style={{
+            fontFamily: Fonts.bold,
+            fontSize: FontSize.primary,
+            color: Colors.gray2,
+            textAlign: "center",
+            marginTop: 100
+          }}>
+            ไม่พบข้อมูล
+          </Text>
+        }
       </ScrollView>
     </View>
       :

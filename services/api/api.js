@@ -18,8 +18,8 @@ import apis from "./config"
 
 class api {
 
-  getAllEvents(){
-     return apis({method: "get", url: `events?pageSize=100`})
+  getAllEvents(order = ""){
+     return apis({method: "get", url: `events${order}?pageSize=100`})
   }
 
   checkUserEmail(email){
@@ -55,7 +55,6 @@ class api {
   }
 
   getAllEventReport(memberId){
-    console.log(memberId)
     return apis({
       method: "post",
       url: `reports/getReports`,
@@ -80,6 +79,16 @@ class api {
       data: { reportId: reportId, memberId: memberId, isReview: isReview},
     })
   }
+
+  updateProfile(data){
+    return apis({
+      method: "put",
+      url: `/members/updateProfile`,
+      data: data,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  }
+
 
   createEvent(data){
     return apis({
@@ -268,7 +277,7 @@ class api {
   getEventAttention(){
     return apis({
       method: "get",
-      url: `events/attention?pageSize=20`,
+      url: `events/attention?pageSize=100`,
     })
   }
 
@@ -279,12 +288,12 @@ class api {
     })
   }
 
-  getEventByTag(selectTag){
-    console.log(selectTag)
-    const tags = selectTag?.map((item) => `&tags=${item}`).join('')
+  getEventByTag(memId){
+    // console.log(selectTag)
+    // const tags = selectTag?.map((item) => `&tags=${item}`).join('')
     return apis({
       method: "get",
-      url: `events/getEventByTag?pageSize=20${tags}`,
+      url: `events/getEventByTag/${memId}`,
     })
   }
 
@@ -320,19 +329,21 @@ class api {
     })
   }
 
+  getFollowerList(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowerList`,
+      data: data
+    })
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
+  getFollowingList(data){
+    return apis({
+      method: "post",
+      url: `/members/follow/getFollowingList`,
+      data: data
+    })
+  }
 
 
 }

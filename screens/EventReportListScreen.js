@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Image, Platform, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {Image, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import api from "../services/api/api";
 import storages from "../services/storage/storages";
 import Colors from "../constants/Colors";
@@ -8,25 +8,34 @@ import fontSize from "../constants/FontSize";
 import {toBuddhistYear} from "../constants/Buddhist-year";
 import moment from "moment/moment";
 import EventCardList from "../components/eventCardList";
+import {getUserInfo} from "../actions/auth";
+import {useDispatch, useSelector} from "react-redux";
 
 const EventReportListScreen = (props) => {
-
-  const [userData, setUserData] = useState(null)
+  const dispatch = useDispatch();
+  const {userInfo} = useSelector(state => state.auth)
   const [event, setEvent] = useState(null)
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = props.navigation.addListener('focus', () => {
-      if(event !== null){
-        setEvent(null)
-        console.log('Reload Event')
-        setTimeout(()=>{
-          getAllEventReport()
-        },300)
-      }
-    });
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    console.log('Refresh')
+    getAllEventReport()
+  }, []);
 
-    return unsubscribe;
-  }, [props.navigation]);
+  // useEffect(() => {
+  //   const unsubscribe = props.navigation.addListener('focus', () => {
+  //     if(event !== null){
+  //       setEvent(null)
+  //       console.log('Reload Event')
+  //       setTimeout(()=>{
+  //         getAllEventReport()
+  //       },300)
+  //     }
+  //   });
+  //
+  //   return unsubscribe;
+  // }, [props.navigation]);
 
   useEffect(() => {
     checkHasUser()
@@ -34,35 +43,26 @@ const EventReportListScreen = (props) => {
 
   useEffect(() => {
     getAllEventReport()
-  }, [userData])
+  }, [userInfo])
 
   const getAllEventReport = () =>{
-    if (userData !== null) {
-      api.getAllEventReport(userData.id).then(res => {
+    if (userInfo !== null) {
+      api.getAllEventReport(userInfo?.id).then(res => {
         if (res.status === 200) {
           setEvent(res.data)
+          setRefreshing(false)
         }
       })
     }
   }
 
   const checkHasUser = () => {
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-        }
-      }).catch(error => {
-        setUserData(null)
-        console.log("GET USER")
-        console.log(error)
-      })
-    })
+    dispatch(getUserInfo)
   }
 
   const renderCardList = (id, name, start, end, img) => (
     <TouchableOpacity key={name} style={{width: '95%'}} activeOpacity={1}
-                      onPress={() => props.navigation.navigate('EventReport', {eveId: id, memId: userData?.id})}>
+                      onPress={() => props.navigation.navigate('EventReport', {eveId: id, memId: userInfo?.id})}>
       <View style={{
         flexDirection: 'row',
         width: '100%',
@@ -108,6 +108,12 @@ const EventReportListScreen = (props) => {
   return (
     <View style={{flex: 1, marginTop: (Platform.OS === 'ios' ? 80 : 60)}}>
       <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
         style={{marginTop: 20}}
         contentContainerStyle={{paddingBottom: 300}}
         showsVerticalScrollIndicator={false}
@@ -116,7 +122,7 @@ const EventReportListScreen = (props) => {
           event?.map((eve, index) => (
             <EventCardList key={index} item={eve} onPress={() => props.navigation.navigate('EventReport', {
               eveId: eve.id,
-              memId: userData?.id
+              memId: userInfo?.id
             })}/>
           ))
         }
