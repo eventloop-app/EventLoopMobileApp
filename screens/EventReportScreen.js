@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Platform, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {Button, Image, Platform, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import api from "../services/api/api";
 import Colors from "../constants/Colors";
 import fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
+import Fonts from "../constants/Fonts";
 
 const EventReportScreen = (props) => {
 
@@ -12,17 +13,17 @@ const EventReportScreen = (props) => {
   const [isLoad, setIsLoad] = useState(false)
 
   useEffect(() => {
-    console.log(props)
     getReports()
   }, [])
 
   const getReports = () => {
     api.getReportDetailById(props.route.params.memId, props.route.params.eveId).then(res => {
       if (res.status === 200) {
-        console.log(res.data)
         setEventInfo(res.data[0])
         setReports(res.data[0].reports)
       }
+    },error => {
+      console.log(error)
     })
   }
 
@@ -70,7 +71,6 @@ const EventReportScreen = (props) => {
     })
   }
 
-
   const unSuspendEvent = () => {
     let data = {
       eventId: eventInfo.id,
@@ -89,14 +89,15 @@ const EventReportScreen = (props) => {
   }
 
   return (!isLoad &&
-    <View style={{flex: 1, marginTop: Platform.OS === 'ios' ? 80 : 60}}>
+    <View style={{flex: 1, backgroundColor: Colors.white}}>
       <ScrollView
-        style={{marginTop: 30}}
+        style={{marginTop: Platform.OS === 'ios' ? 120 : 80,}}
         contentContainerStyle={{paddingBottom: 100}}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}>
         {
           reports?.map((rep, inx) => (
+
             <View
               key={inx}
               style={{
@@ -128,12 +129,34 @@ const EventReportScreen = (props) => {
                   width: "95%",
                   height: "100%",
                 }}>
-                  <Text style={{
-                    textAlign: 'center',
-                    fontFamily: fonts.primary,
-                    fontSize: fontSize.small,
-                    color: rep.isReview ? 'green' : Colors.black
-                  }}>{rep.description}</Text>
+                  <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginTop: 10}}>
+                    <Image
+                      style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 100,
+                        resizeMode: 'cover'
+                      }}
+                      source={{
+                        uri: (reports[0]?.member.profileUrl ?? 'https://cdn.discordapp.com/attachments/1018506224167297146/1034872227377717278/no-image-available-icon-6.png')
+                      }}
+                    />
+                    <Text style={{
+                      fontFamily: Fonts.primary,
+                      fontSize: fontSize.primary,
+                      color: Colors.black,
+                      marginLeft: 5
+                    }}>{reports[0]?.member.username}</Text>
+                  </View>
+                  <View style={{ marginTop: 20}}>
+
+                    <Text style={{
+                      textAlign: 'center',
+                      fontFamily: fonts.primary,
+                      fontSize: fontSize.small,
+                      color: rep.isReview ? 'green' : Colors.black
+                    }}>{rep.description}</Text>
+                  </View>
                 </View>
 
                 <TouchableOpacity disabled={rep.isReview} style={{position: 'relative', left: 0, bottom: 50}}

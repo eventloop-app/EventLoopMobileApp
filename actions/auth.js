@@ -22,26 +22,28 @@ export const SignOut = () => (dispatch) => {
 }
 
 export const RegisterSuccess = (data) => (dispatch) => {
+  console.log(data)
   storages.save('userInfo', JSON.stringify(data))
   dispatch({type: REGISTER_SUCCESS, payload: data})
 }
 
 export const UpdateProfileData = (memId) => (dispatch) => {
-  api.getUserDataById(memId).then(res => {
-    if(res.status === 200){
-      storages.save('userInfo', JSON.stringify(res.data))
-      dispatch({type: REGISTER_SUCCESS, payload: res.data})
-    }
-  })
+  console.log("UpdateData!!")
+  if(memId !== null){
+    api.getUserDataById(memId).then(res => {
+      if(res.status === 200){
+        storages.save('userInfo', JSON.stringify(res.data))
+        dispatch({type: REGISTER_SUCCESS, payload: res.data})
+      }
+    })
+  }
 }
 
 export const getUserInfo = () => (dispatch) => {
   storages.getData('userInfo').then(res =>{
     if(res !== undefined){
-      // console.log( JSON.parse(res))
+      console.log("GET USERINFO!!")
       dispatch({type: GET_USERINFO, payload: JSON.parse(res)})
-    }else{
-      dispatch({type: GET_USERINFO, payload: null})
     }
   })
 }

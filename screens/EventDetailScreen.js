@@ -513,6 +513,7 @@ const EventDetailScreen = (props) => {
         )
       default:
         return (
+          userInfo?.role !== 'ADMIN' &&
           <TouchableOpacity disabled={true} style={{justifyContent: 'center', alignItems: 'center'}}>
             <View style={{
               width: "90%",

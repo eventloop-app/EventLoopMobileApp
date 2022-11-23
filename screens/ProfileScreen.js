@@ -23,6 +23,7 @@ import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import EventIcons from "../components/eventIcons";
 import EventCards from "../components/eventCards";
+import storages from "../services/storage/storages";
 
 WebBrowser.maybeCompleteAuthSession();
 const ProfileScreen = (props) => {
@@ -37,10 +38,9 @@ const ProfileScreen = (props) => {
 
   useFocusEffect(
     useCallback(() => {
-      if(userInfo !== null){
-        dispatch(UpdateProfileData(userInfo?.id))
-      }
-
+      storages.getUserData().then(res => {
+        dispatch(UpdateProfileData(res.memberId))
+      })
       return () => {
         console.log('Unmount')
         translation.setValue(450)
@@ -141,9 +141,11 @@ const ProfileScreen = (props) => {
     }
   }
 
-
   const signOut = () => {
     onShowModel()
+    storages.remove('userToken')
+    storages.remove('Token')
+    storages.remove('userInfo')
     setTimeout(() => {
       dispatch(SignOut())
       setIsLogin(false)
@@ -202,7 +204,10 @@ const ProfileScreen = (props) => {
         }}>
 
           <View style={{flex: 1, padding: 10}}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={()=> {
+              onShowModel()
+              navigation.navigate('EditProfile')
+            }}>
               <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: 20, marginTop: 20}}>
                 <EventIcons source={'MaterialCommunityIcons'} name="account-edit" size={30} color={Colors.black}/>
                 <Text style={{
@@ -322,12 +327,12 @@ const ProfileScreen = (props) => {
                 color: Colors.black
               }}>
                 {
-                  userInfo?.username ?? "ผู้เยียมชม"}
-
+                  userInfo?.username ?? "ผู้เยียมชม"
+                }
               </Text>
             </View>
 
-            {userInfo === null ?
+            {(userInfo === null) ?
               <View style={{flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center'}}>
                 <Text style={{
                   fontFamily: Fonts.primary, fontSize: fontSize.primary, textAlign: 'center'
@@ -336,12 +341,11 @@ const ProfileScreen = (props) => {
                 </Text>
               </View>
               :
-              <View style={{
+              ( userInfo?.role !== "ADMIN" && <View style={{
                 flex: 1,
                 width: '100%',
                 alignItems: 'center',
-                justifyContent: 'center',
-              }}>
+                justifyContent: 'center'}}>
                 <View style={{flex: 1, flexDirection: 'row', marginBottom: 10}}>
                   <View style={{
                     flex: 1,
@@ -349,7 +353,7 @@ const ProfileScreen = (props) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <TouchableOpacity onPress={()=> navigation.navigate('FollowList', {keyword: "ผู้ติดตาม", memId: userInfo.id})} style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                       <Text style={{
                         fontFamily: Fonts.bold,
                         fontSize: fontSize.primary,
@@ -366,7 +370,7 @@ const ProfileScreen = (props) => {
                       }}>
                         ผู้ติดตาม
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
                   <View style={{
                     flex: 1,
@@ -374,7 +378,7 @@ const ProfileScreen = (props) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <TouchableOpacity onPress={()=> navigation.navigate('FollowList', {keyword: "ผู้กำลังติดตาม", memId: userInfo.id})} style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                       <Text style={{
                         fontFamily: Fonts.bold,
                         fontSize: fontSize.primary,
@@ -391,13 +395,13 @@ const ProfileScreen = (props) => {
                       }}>
                         กำลังติดตาม
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </View>
+              </View>)
             }
             {
-              userInfo &&
+              (userInfo && userInfo?.role !== "ADMIN") &&
               <View style={{
                 flex: 0.6,
                 width: '80%',
@@ -446,7 +450,13 @@ const ProfileScreen = (props) => {
                   </TouchableOpacity>
                   :
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ManageEvent')}
+                    onPress={() => {
+                      if(userInfo?.role === "MEMBER"){
+                        navigation.navigate('ManageEvent')
+                      }else{
+                        navigation.navigate('EventReportList')
+                      }
+                    }}
                     style={{
                       width: '70%',
                       height: 50,
@@ -459,13 +469,13 @@ const ProfileScreen = (props) => {
                       fontFamily: Fonts.bold,
                       fontSize: fontSize.primary,
                       color: Colors.white
-                    }}>จัดการกิจกรรม</Text>
+                    }}>{userInfo?.role === "MEMBER" ? 'จัดการกิจกรรม' : 'จัดการคำร้อง'}</Text>
                   </TouchableOpacity>
               }
             </View>
           </View>
         </Animated.View>
-        {userInfo !== null &&
+        {(userInfo !== null && userInfo.role !== "ADMIN") &&
           renderUserEventCard()
         }
       </View>

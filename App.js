@@ -34,6 +34,8 @@ import EventListForJoinScreen from "./screens/EventListForJoinScreen";
 import api from "./services/api/api";
 import MemberProfileScreen from "./screens/MemberProfileScreen";
 import EventListForCreateScreen from "./screens/EventListForCreateScreen";
+import EditProfileScreen from "./screens/EditProfileScreen";
+import FollowListScreen from "./screens/FollowListScreen";
 
 moment().locale('th')
 
@@ -289,7 +291,7 @@ export default function App({route, navigation}) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'รายการกิจกรมม',
+                          title: 'รายการกิจกรรม',
                           headerLeft: () => (
                             <TouchableOpacity
                               style={{
@@ -338,6 +340,69 @@ export default function App({route, navigation}) {
                           )
                         })}
           />
+
+          <Stack.Screen name={'EditProfile'} component={EditProfileScreen}
+                        options={({route, navigation}) => ({
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: '',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="md-close" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
+          />
+
+          <Stack.Screen name={'FollowList'} component={FollowListScreen}
+                        options={({route, navigation}) => ({
+                          headerShown: true,
+                          headerTransparent: true,
+                          tabBarShowLabel: false,
+                          headerBackVisible: false,
+                          headerTitleAlign: 'center',
+                          headerTitleStyle: {
+                            fontFamily: Fonts.bold,
+                            fontSize: fontSize.primary,
+                            color: Colors.black,
+                          },
+                          title: '',
+                          headerLeft: () => (
+                            <TouchableOpacity
+                              style={{
+                                borderRadius: 100,
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                              }}
+                              onPress={() => navigation.pop()}
+                            >
+                              <Ionicons name="md-close" size={25} color={Colors.black}/>
+                            </TouchableOpacity>
+                          )
+                        })}
+          />
+
           <Stack.Screen name={'Error'} component={ErrorScreen}
                         options={{headerShown: false, tabBarShowLabel: false}}/>
 
