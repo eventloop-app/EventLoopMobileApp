@@ -80,6 +80,15 @@ const FeedScreen = (props) => {
     setEventByTag(null)
     setEventByFollowing(null)
     setAllEvent(null)
+
+    storages.getUserData().then(res => {
+      api.getUserDataById(res.memberId).then(user => {
+        if (user.status === 200) {
+          setUserData(user.data)
+        }
+      })
+    })
+
     setTimeout(()=>{
       getAllEvent()
     },1000)
@@ -116,24 +125,17 @@ const FeedScreen = (props) => {
 
   const getEventAttention = () => {
     console.log("GET EventAttention")
-
     api.getEventAttention().then(res => {
       if (res.status === 200) {
         setEventAttention(res.data.content)
-        if (userData !== null) {
-          getEventByTag()
-        }else {
-          setIsLoad(false)
-          setRefreshing(false)
-        }
+        getEventByTag()
       }
     })
   }
 
   const getEventByTag = () => {
     console.log("GET EventTag")
-
-    api.getEventByTag(userData.id).then(res => {
+    api.getEventByTag(userData?.id).then(res => {
       setEventByTag(res.data.content)
       getEventByFollowing()
     }, error => {
@@ -144,10 +146,10 @@ const FeedScreen = (props) => {
   }
 
   const getEventByFollowing = () => {
-
     api.getEventByFollowing({memberId: userData.id}).then(res => {
       setEventByFollowing(res.data)
       setTimeout(() => {
+        console.log('Success!!')
         setIsLoad(false)
         setRefreshing(false)
       }, 1000)
@@ -216,9 +218,9 @@ const FeedScreen = (props) => {
               </Text>
             </View>
 
-            <View style={{flex: 1, alignItems: 'flex-end', marginRight: 40}}>
-              <EventIcons source={'Ionicons'} name={'notifications'} size={30} color={Colors.white}/>
-            </View>
+            {/*<View style={{flex: 1, alignItems: 'flex-end', marginRight: 40}}>*/}
+            {/*  <EventIcons source={'Ionicons'} name={'notifications'} size={30} color={Colors.white}/>*/}
+            {/*</View>*/}
           </View>
         </View>
 
