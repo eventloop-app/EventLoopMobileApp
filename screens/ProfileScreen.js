@@ -39,7 +39,7 @@ const ProfileScreen = (props) => {
   useFocusEffect(
     useCallback(() => {
       storages.getUserData().then(res => {
-        dispatch(UpdateProfileData(res.memberId))
+        dispatch(UpdateProfileData(res?.memberId))
       })
       return () => {
         console.log('Unmount')
@@ -72,6 +72,9 @@ const ProfileScreen = (props) => {
             })
           }
         }
+      },error=>{
+        console.log(error
+        )
       })
     }
   }, [authInfo])
@@ -89,6 +92,9 @@ const ProfileScreen = (props) => {
             setEvent(res.data.content)
           }, 300)
         }
+      },error=>{
+        console.log(error
+        )
       })
     }
   }

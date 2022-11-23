@@ -51,12 +51,16 @@ const FeedScreen = (props) => {
   useEffect(() => {
     console.log('Feed: GetUserInfo')
     storages.getUserData().then(res => {
-      dispatch(UpdateProfileData(res.memberId))
-      api.getUserDataById(res.memberId).then(user => {
+      dispatch(UpdateProfileData(res?.memberId))
+      api.getUserDataById(res?.memberId).then(user => {
         if (user.status === 200) {
           setUserData(user.data)
         }
+      },error=>{
+        console.log(error)
       })
+    },error=>{
+      console.log(error)
     })
   }, [])
 
@@ -65,7 +69,7 @@ const FeedScreen = (props) => {
       if(userInfo !== null){
         console.log('UPDATE!!')
         storages.getUserData().then(res => {
-          dispatch(UpdateProfileData(res.memberId))
+          dispatch(UpdateProfileData(res?.memberId))
         })
       }
       return () => {
@@ -82,10 +86,12 @@ const FeedScreen = (props) => {
     setAllEvent(null)
 
     storages.getUserData().then(res => {
-      api.getUserDataById(res.memberId).then(user => {
+      api.getUserDataById(res?.memberId).then(user => {
         if (user.status === 200) {
           setUserData(user.data)
         }
+      },error=>{
+        console.log(error)
       })
     })
 
@@ -113,15 +119,17 @@ const FeedScreen = (props) => {
         setAllEvent(res.data.content)
         getEventAttention()
       }
+    },error=>{
+      console.log(error)
     })
   }
 
-  const checkHasUser = () => {
-    dispatch(getUserInfo())
-    setTimeout(()=>{
-      getAllEvent()
-    },1000)
-  }
+  // const checkHasUser = () => {
+  //   dispatch(getUserInfo())
+  //   setTimeout(()=>{
+  //     getAllEvent()
+  //   },1000)
+  // }
 
   const getEventAttention = () => {
     console.log("GET EventAttention")
@@ -130,6 +138,8 @@ const FeedScreen = (props) => {
         setEventAttention(res.data.content)
         getEventByTag()
       }
+    },error=>{
+      console.log(error)
     })
   }
 

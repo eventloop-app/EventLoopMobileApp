@@ -27,7 +27,7 @@ const EditProfileScreen = (props) => {
   useEffect(() => {
     console.log('Feed: GetUserInfo')
     storages.getUserData().then(res => {
-      api.getUserDataById(res.memberId).then(user => {
+      api.getUserDataById(res?.memberId).then(user => {
         if (user.status === 200) {
           console.log(user.data)
           setNewData({...newData,

@@ -35,6 +35,8 @@ export const UpdateProfileData = (memId) => (dispatch) => {
         storages.save('userInfo', JSON.stringify(res.data))
         dispatch({type: REGISTER_SUCCESS, payload: res.data})
       }
+    },error=>{
+      console.log(error)
     })
   }
 }
