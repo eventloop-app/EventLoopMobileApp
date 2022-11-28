@@ -534,7 +534,7 @@ const CreateEventScreen = (props) => {
                           fontFamily: Fonts.bold,
                           fontSize: fontSize.primary,
                           color: Colors.white
-                        }}>ยกเลิกกิจกรรม</Text>
+                        }}>ยกเลิกการเข้าร่วมกิจกรรม</Text>
                       </View>
                     </TouchableOpacity>
                   </View>

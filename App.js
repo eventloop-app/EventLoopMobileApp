@@ -245,7 +245,7 @@ export default function App({route, navigation}) {
                             fontSize: fontSize.primary,
                             color: Colors.black,
                           },
-                          title: 'รายการกิจกรรมที่ถูกรายงาน',
+                          title: 'รายการกิจกรรมที่ถูกแจ้ง',
                         })}
           />
           <Stack.Screen name={'EventReport'} component={EventReportScreen}

@@ -19,7 +19,7 @@ import Colors from "../constants/Colors";
 import Fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
 import FontSize from "../constants/FontSize";
-import EventCardHorizon from "../components/EventCardHorizon";
+import EventCardHorizon from "../components/eventCardHorizon";
 import EventIcons from "../components/eventIcons";
 
 const FeedScreen = (props) => {

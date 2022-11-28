@@ -72,7 +72,7 @@ const EventDetailForOrgScreen = (props) => {
         padding: 10,
         alignItems: 'center'
       }}>
-        <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>รายงานกิจกรรม</Text>
+        <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>แจ้งกิจกรรมนี้</Text>
         <View>
           <Image source={{uri: `data:image/jpeg;base64,${qrImg}`}}
                  style={{width: 180, height: 180, borderRadius: 12}}/>
