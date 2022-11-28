@@ -144,7 +144,7 @@ const CreateEventScreen = (props) => {
                 color: Colors.primary,
                 paddingTop: 20
               }}>
-              {dateStatus ? 'ตกลก' : 'ต่อไป'}
+              {dateStatus ? 'ตกลง' : 'ต่อไป'}
             </Text>
           </View>
         </TouchableOpacity>
