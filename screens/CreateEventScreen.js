@@ -424,6 +424,7 @@ const CreateEventScreen = (props) => {
                         onChangeText={(text) => setEventData({...eventData, location: text})}
                       />
                     }
+
                     {
                       eventData.type === "ONSITE" &&
                       <Text numberOfLines={1} style={{fontFamily: Fonts.primary, fontSize: FontSize.primary}}>
