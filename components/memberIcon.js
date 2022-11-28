@@ -5,7 +5,7 @@ import fontSize from "../constants/FontSize";
 import Colors from "../constants/Colors";
 import api from "../services/api/api";
 
-const MemberProfile = ({user, event}) => {
+const MemberIcon = ({user, event}) => {
   const [isCheck, setIsCheck] = useState(false)
 
   useEffect(()=>{
@@ -52,4 +52,4 @@ const MemberProfile = ({user, event}) => {
   );
 };
 
-export default MemberProfile;
+export default MemberIcon;

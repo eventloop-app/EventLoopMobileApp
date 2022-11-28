@@ -447,7 +447,7 @@ const CreateEventScreen = (props) => {
 
               <View style={{display: 'flex', flexDirection: 'column', margin: 10}}>
                 <Text style={{fontFamily: Fonts.bold, fontSize: FontSize.medium}}>
-                  รายระเอียดกิจกรรม
+                  รายละเอียดกิจกรรม
                 </Text>
                 <View style={{display: 'flex', marginTop: 5}}>
                   <TextInput

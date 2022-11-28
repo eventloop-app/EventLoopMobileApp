@@ -47,7 +47,8 @@ class storages  {
       let data = await AsyncStorage.getItem('userToken');
       if (data !== null) {
         data = decode.jwt(JSON.parse(data).idToken)
-        return new Promise(resolve => resolve(data))
+        return Promise.resolve(data)
+        // return new Promise(resolve => resolve(data))
       }
     } catch (error) {
       console.log("GetStorageError:" + error);

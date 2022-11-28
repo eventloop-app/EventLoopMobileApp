@@ -10,10 +10,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import storages from "../services/storage/storages";
+
 import {useDispatch, useSelector} from "react-redux";
-import {Token} from "../actions/token";
-import {getUserInfo, UpdateProfileData} from "../actions/auth";
+import {getUserInfo} from "../actions/auth";
 import api from "../services/api/api";
 import EventCards from "../components/eventCards";
 import Colors from "../constants/Colors";
@@ -22,7 +21,6 @@ import fontSize from "../constants/FontSize";
 import FontSize from "../constants/FontSize";
 import EventCardHorizon from "../components/EventCardHorizon";
 import EventIcons from "../components/eventIcons";
-import {useFocusEffect} from "@react-navigation/native";
 
 const FeedScreen = (props) => {
   const [isLoad, setIsLoad] = useState(true)
@@ -46,131 +44,84 @@ const FeedScreen = (props) => {
     icon: 'MaterialIcons',
     iconName: 'all-inclusive'
   }]
+
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    console.log('Feed: GetUserInfo')
-    storages.getUserData().then(res => {
-      dispatch(UpdateProfileData(res?.memberId))
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-        }
-      },error=>{
-        console.log(error)
-      })
-    },error=>{
-      console.log(error)
-    })
-  }, [])
+  useEffect(()=> {
+    dispatch(getUserInfo())
+  },[])
 
-  useFocusEffect(
-    useCallback(() => {
-      if(userInfo !== null){
-        console.log('UPDATE!!')
-        storages.getUserData().then(res => {
-          dispatch(UpdateProfileData(res?.memberId))
-        })
-      }
-      return () => {
-        console.log('Unmount')
-      };
-    }, [])
-  );
+  useEffect(()=>{
+    if(userInfo !== null){
+      a()
+    }else if(isLoad){
+      a()
+    }
+  },[userInfo])
 
-  const onRefresh = useCallback(() => {
+  const a = async ()=> {
+    console.log(userInfo)
+    const [a, b, c, d] = await Promise.all([getAllEvent(),getEventAttention(),getEventByTag(),getEventByFollowing()])
+    await setIsLoad(false)
+    await setRefreshing(false)
+    console.log(a, b, c, d)
+  }
+
+  const onRefresh = () => {
     setRefreshing(true);
-    setEventAttention(null)
-    setEventByTag(null)
-    setEventByFollowing(null)
-    setAllEvent(null)
-
-    storages.getUserData().then(res => {
-      api.getUserDataById(res?.memberId).then(user => {
-        if (user.status === 200) {
-          setUserData(user.data)
-        }
-      },error=>{
-        console.log(error)
-      })
-    })
-
-    setTimeout(()=>{
-      getAllEvent()
-    },1000)
-  }, []);
-
-  useEffect(() => {
-    storages.getData('Token').then(res => {
-      if (res === undefined) {
-        dispatch(Token(props.route.params.token))
-      }
-    })
-  }, [])
-
-  useEffect(() => {
-    console.log('Feed: GetAllEvent')
-    getAllEvent()
-  }, [userData])
+    setEventAttention([])
+    setEventByTag([])
+    setEventByFollowing([])
+    setAllEvent([])
+    a()
+  };
 
   const getAllEvent = () => {
-    api.getAllEvents().then(res => {
+    console.log("GET ALLEVENT")
+    let a = api.getAllEvents().then( res => {
       if (res.status === 200) {
         setAllEvent(res.data.content)
-        getEventAttention()
+        return Promise.resolve(res.status)
+        // getEventAttention()
       }
     },error=>{
       console.log(error)
     })
+    return a
   }
-
-  // const checkHasUser = () => {
-  //   dispatch(getUserInfo())
-  //   setTimeout(()=>{
-  //     getAllEvent()
-  //   },1000)
-  // }
-
   const getEventAttention = () => {
     console.log("GET EventAttention")
-    api.getEventAttention().then(res => {
+    return api.getEventAttention().then(res => {
       if (res.status === 200) {
         setEventAttention(res.data.content)
-        getEventByTag()
+        return Promise.resolve(res.status)
       }
     },error=>{
       console.log(error)
     })
   }
-
+  //
   const getEventByTag = () => {
     console.log("GET EventTag")
-    api.getEventByTag(userData?.id).then(res => {
+    return api.getEventByTag(userInfo?.id).then(res => {
       setEventByTag(res.data.content)
-      getEventByFollowing()
+      return Promise.resolve(res.status)
     }, error => {
-      setIsLoad(false)
-      setRefreshing(false)
       console.log(error)
     })
   }
-
+  //
   const getEventByFollowing = () => {
-    api.getEventByFollowing({memberId: userData.id}).then(res => {
+    return api.getEventByFollowing({memberId: userInfo?.id}).then(res => {
       setEventByFollowing(res.data)
-      setTimeout(() => {
-        console.log('Success!!')
-        setIsLoad(false)
-        setRefreshing(false)
-      }, 1000)
+      return Promise.resolve(res.status)
     }, error => {
-      setIsLoad(false)
-      setRefreshing(false)
       console.log(error)
     })
   }
 
-  return (!isLoad ?
+  return (
+    !isLoad ?
       <View style={{flex: 1, backgroundColor: Colors.white}}>
         <StatusBar
           backgroundColor="transparent"
@@ -207,7 +158,7 @@ const FeedScreen = (props) => {
           }}>
             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
               <Image
-                source={userData?.profileUrl ? {uri: userData?.profileUrl} : require('../assets/images/profileImage.jpg')}
+                source={userInfo?.profileUrl ? {uri: userInfo?.profileUrl} : require('../assets/images/profileImage.jpg')}
                 style={{
                   marginLeft: 10,
                   height: 70,
@@ -224,7 +175,7 @@ const FeedScreen = (props) => {
                 color: Colors.black,
                 marginLeft: 10,
               }}>
-                {userData?.username ?? 'ผู้เยียมชม'}
+                {userInfo?.username ?? 'ผู้เยี่ยมชม'}
               </Text>
             </View>
 
@@ -275,7 +226,7 @@ const FeedScreen = (props) => {
                 renderItem={({item}) => (
                   <EventCardHorizon item={item} onPress={() => props.navigation.navigate('EventDetail', {
                     event: item,
-                    userInfo: userData ?? undefined
+                    userInfo: userInfo ?? undefined
                   })}/>)}
                 keyExtractor={(item) => item.id}
                 showsHorizontalScrollIndicator={false}
@@ -284,7 +235,7 @@ const FeedScreen = (props) => {
             </View>
 
             {
-              userData !== null &&
+              userInfo !== null &&
               <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 10, marginBottom: 50}}>
                 <View style={{width: '95%', height: 250,}}>
                   <View style={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
@@ -352,7 +303,7 @@ const FeedScreen = (props) => {
                     <EventCards event={item}
                                 onPress={() => props.navigation.navigate('EventDetail', {
                                   event: item,
-                                  userInfo: userData ?? undefined
+                                  userInfo: userInfo ?? undefined
                                 })}/>
                   )
                 }}
@@ -392,7 +343,7 @@ const FeedScreen = (props) => {
                       <EventCards event={item}
                                   onPress={() => props.navigation.navigate('EventDetail', {
                                     event: item,
-                                    userInfo: userData ?? undefined
+                                    userInfo: userInfo ?? undefined
                                   })}/>
                     )
                   }}
@@ -435,7 +386,7 @@ const FeedScreen = (props) => {
                       <EventCards event={item}
                                   onPress={() => props.navigation.navigate('EventDetail', {
                                     event: item,
-                                    userInfo: userData ?? undefined
+                                    userInfo: userInfo ?? undefined
                                   })}/>
                     )
                   }}

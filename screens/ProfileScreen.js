@@ -333,7 +333,7 @@ const ProfileScreen = (props) => {
                 color: Colors.black
               }}>
                 {
-                  userInfo?.username ?? "ผู้เยียมชม"
+                  userInfo?.username ?? "ผู้เยี่ยมชม"
                 }
               </Text>
             </View>
@@ -343,7 +343,7 @@ const ProfileScreen = (props) => {
                 <Text style={{
                   fontFamily: Fonts.primary, fontSize: fontSize.primary, textAlign: 'center'
                 }}>
-                  {`คุณยังไม่ได้เข้าสู่ระบบ\nเข้าสู่ระบบเพื่อใช้งานแอพพลิเคชั่นได้สมบูรณ์`}
+                  {`คุณยังไม่ได้เข้าสู่ระบบ\nเข้าสู่ระบบเพื่อใช้งานแอปพลิเคชั่นได้สมบูรณ์`}
                 </Text>
               </View>
               :

@@ -5,7 +5,7 @@ import Fonts from "../constants/Fonts";
 import fontSize from "../constants/FontSize";
 import api from "../services/api/api";
 import FontSize from "../constants/FontSize";
-import MemberProfile from "../components/memberProfile";
+import MemberIcon from "../components/memberIcon";
 
 const EventDetailForOrgScreen = (props) => {
   const memId = props.route.params.memId
@@ -127,7 +127,7 @@ const EventDetailForOrgScreen = (props) => {
             >
           {
             memOfEvent?.map((mem,index) => (
-              <MemberProfile key={index} user={mem} event={eveId}/>
+              <MemberIcon key={index} user={mem} event={eveId}/>
             ))
           }
           </ScrollView>
