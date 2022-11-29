@@ -40,7 +40,7 @@ const CreateEventScreen = (props) => {
   const [dateStatus, setDateStatus] = useState(null)
   const [coverImage, setCoverImage] = useState(null)
   const [showLoad, setShowLoad] = useState(false)
-
+  const [showError, setShowError] = useState(false)
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
       if (props.route.params?.map !== undefined && props.route.params?.map !== null) {
@@ -506,6 +506,14 @@ const CreateEventScreen = (props) => {
     </View>
   )
 
+  const renderError = () =>(
+    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.25)', zIndex: 50}}>
+      <View style={{width: 150, height:100, backgroundColor: Colors.white, borderRadius: 15, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{fontFamily: Fonts.bold, fontSize: fontSize.primary}}>มีบางอย่างผิดพลาด</Text>
+      </View>
+    </View>
+  )
+
   const onSubmit = () => {
     setShowLoad(true)
     const filename = coverImage?.toString().split('/').pop()
@@ -537,6 +545,13 @@ const CreateEventScreen = (props) => {
         await setShowLoad(false)
         props.navigation.navigate('Feed')
       }
+    }, error =>{
+      console.log('error')
+      setShowLoad(false)
+      setShowError(true)
+      setTimeout(()=>{
+        setShowError(false)
+      },1000)
     })
   }
 
@@ -544,6 +559,9 @@ const CreateEventScreen = (props) => {
     <View style={{flex: 1, backgroundColor: userInfo ? Colors.gray2 : Colors.white}}>
       {
         showLoad && renderLoad()
+      }
+      {
+        showError && renderError()
       }
       {
         (Platform.OS === 'ios' && dateStatus != null) && renderSelectDataIOS()
