@@ -521,7 +521,16 @@ const CreateEventScreen = (props) => {
                       </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={{marginTop: 15}} onPress={() => props.navigation.pop()}>
+                    <TouchableOpacity style={{marginTop: 15}} onPress={() => {
+                      api.removeEvent({memberId: eventData.memberId, eventId: eventData.eventId}).then(res =>{
+                        if(res.status === 200){
+                          console.log("REMOVE!!!!!!!")
+                          props.navigation.pop()
+                        }else{
+                          console.log(res.data)
+                        }
+                      })
+                    }}>
                       <View style={{
                         backgroundColor: Colors.red,
                         width:  Platform.OS === 'ios'?  350 : 390,
@@ -534,7 +543,7 @@ const CreateEventScreen = (props) => {
                           fontFamily: Fonts.bold,
                           fontSize: fontSize.primary,
                           color: Colors.white
-                        }}>ยกเลิกการเข้าร่วมกิจกรรม</Text>
+                        }}>ยกเลิกกิจกรรม</Text>
                       </View>
                     </TouchableOpacity>
                   </View>

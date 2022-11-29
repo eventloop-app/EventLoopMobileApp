@@ -22,6 +22,15 @@ class api {
      return apis({method: "get", url: `events${order}?pageSize=100`})
   }
 
+  removeEvent(data){
+    console.log(data)
+    return apis({
+      method: "delete",
+      url: `events/deleteEvent`,
+      data: data
+    })
+  }
+
   checkUserEmail(email){
     return apis({
       method: "post",
