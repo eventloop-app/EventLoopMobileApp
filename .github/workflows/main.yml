@@ -56,4 +56,4 @@ jobs:
           command_timeout: 5m
           script: |
             cd EventLoopMobileApp/
-            ls -la
+            eas build -p android --profile preview
