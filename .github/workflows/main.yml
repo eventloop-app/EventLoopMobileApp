@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     
 jobs:
-  deploy:
+  executing-ssh-commands:
     runs-on: ubuntu-20.04
     steps:
       - uses: appleboy/ssh-action@master
